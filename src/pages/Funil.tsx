@@ -587,15 +587,14 @@ function StageColumn({ stage, leads, draggingId, stageColor, move }: {
   const ids = leads.map((l) => l.id)
   return (
     <section className="flex w-[300px] min-w-[288px] shrink-0 flex-col rounded-2xl border border-border bg-muted/25">
-      <header className="shrink-0 px-3 pt-3">
-        <div className="h-1 w-full rounded-full" style={{ background: stage.color }} aria-hidden />
-        <div className="mt-2.5 flex items-baseline justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <h2 className="text-[13.5px] font-semibold tracking-tight">{stage.label}</h2>
-            <span className="rounded-full bg-card px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground">{leads.length}</span>
-          </div>
-          <span className="font-mono text-xs font-medium tabular-nums text-muted-foreground">{brl(sumValues(leads))}</span>
-        </div>
+      <header className="shrink-0 px-3 pt-3.5">
+        <h2 className="text-center text-[12px] font-bold uppercase tracking-[0.08em] text-foreground">{stage.label}</h2>
+        <div className="mt-2 h-[2.5px] w-full rounded-full" style={{ background: stage.color }} aria-hidden />
+        <p className="mt-2 text-center text-[11.5px] text-muted-foreground">
+          <span className="font-semibold tabular-nums text-foreground">{leads.length}</span> {leads.length === 1 ? 'lead' : 'leads'}
+          <span className="mx-1 opacity-40">·</span>
+          <span className="font-mono tabular-nums">{brl(sumValues(leads))}</span>
+        </p>
       </header>
       <div
         ref={setNodeRef}
@@ -760,15 +759,14 @@ function LeadCardBody({ lead, stageColor, overlay = false, interactive = false, 
   return (
     <article
       className={cn(
-        'group relative flex min-h-[172px] flex-col overflow-hidden rounded-xl border border-white/[0.08] p-3.5 pl-4 transition',
+        'group relative flex min-h-[172px] flex-col overflow-hidden rounded-xl border p-3.5 pl-4 transition',
+        'border-black/[0.07] dark:border-white/[0.05]',
         overlay
-          ? 'w-[280px] rotate-2 cursor-grabbing shadow-[0_22px_48px_-10px_rgba(0,0,0,0.75)]'
-          : 'shadow-[0_6px_20px_-8px_rgba(0,0,0,0.55)] backdrop-blur-md hover:border-teal/40 hover:shadow-[0_12px_28px_-8px_rgba(0,0,0,0.65)]',
+          ? 'w-[280px] rotate-2 cursor-grabbing bg-card shadow-[0_18px_40px_-10px_rgba(0,0,0,0.28)] dark:shadow-[0_22px_48px_-10px_rgba(0,0,0,0.8)]'
+          : 'bg-[hsl(var(--card)/0.9)] backdrop-blur-xl backdrop-saturate-150 dark:bg-[hsl(var(--card)/0.55)] shadow-[0_4px_16px_-6px_rgba(15,23,42,0.16)] hover:border-teal/40 hover:shadow-[0_10px_26px_-8px_rgba(15,23,42,0.22)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_10px_30px_-10px_rgba(0,0,0,0.7)] dark:hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_18px_42px_-12px_rgba(0,0,0,0.8)]',
       )}
       style={{
-        background: overlay
-          ? `linear-gradient(125deg, color-mix(in srgb, ${color}, transparent 88%), transparent 55%), hsl(var(--card))`
-          : `linear-gradient(125deg, color-mix(in srgb, ${color}, transparent 90%), transparent 55%), hsl(var(--card) / 0.72)`,
+        backgroundImage: `linear-gradient(125deg, color-mix(in srgb, ${color}, transparent ${overlay ? 88 : 90}%), transparent 55%)`,
       }}
     >
       <span className="absolute inset-y-0 left-0 w-1" style={{ background: stripe }} aria-hidden />

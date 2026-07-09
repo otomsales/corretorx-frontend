@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Search, ChevronDown, ChevronUp, ChevronsUpDown, Check, X, Plus, MessageCircle, Activity, ArrowRightLeft, Pencil, Trash2, Eye, Users,
+  Search, ChevronDown, ChevronUp, ChevronsUpDown, Check, X, Plus, MessageCircle, Activity, ArrowRightLeft, Pencil, Trash2, Eye, Users, Columns3,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -31,6 +31,48 @@ const PERIOD_OPTS = [
   { value: '7', label: 'Últimos 7 dias' }, { value: '30', label: 'Últimos 30 dias' },
   { value: '90', label: 'Últimos 90 dias' }, { value: 'custom', label: 'Personalizado…' },
 ]
+
+// colunas configuráveis (Lead e Ações ficam sempre visíveis)
+const COLS = [
+  { key: 'phone', label: 'Telefone' },
+  { key: 'tier', label: 'Tier' },
+  { key: 'stage', label: 'Etapa' },
+  { key: 'status', label: 'Status' },
+  { key: 'owner', label: 'Responsável' },
+  { key: 'entrada', label: 'Entrada' },
+  { key: 'followup', label: 'Próx. retorno' },
+] as const
+
+function ColumnsMenu({ hidden, toggle }: { hidden: Set<string>; toggle: (k: string) => void }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="relative">
+      <button onClick={() => setOpen((v) => !v)} className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground">
+        <Columns3 className="h-3.5 w-3.5" /> Colunas
+        <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} />
+      </button>
+      {open && (
+        <>
+          <button type="button" className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-hidden />
+          <div className="dropdown-in absolute right-0 top-full z-50 mt-1.5 w-56 rounded-xl border border-white/10 bg-card p-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
+            <p className="px-2.5 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60">Colunas visíveis</p>
+            {COLS.map((c) => {
+              const on = !hidden.has(c.key)
+              return (
+                <button key={c.key} onClick={() => toggle(c.key)} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] text-foreground transition-colors hover:bg-foreground/[0.05]">
+                  <span className={cn('grid h-4 w-4 shrink-0 place-items-center rounded-[5px] border-[1.5px] transition-colors', on ? 'border-transparent bg-teal' : 'border-input')}>
+                    {on && <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3.5} />}
+                  </span>
+                  <span className="flex-1">{c.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 // ordenação
 type SortKey = 'lead' | 'phone' | 'tier' | 'stage' | 'status' | 'owner' | 'entrada' | 'followup'
@@ -122,6 +164,10 @@ export default function Leads() {
   const [fTo, setFTo] = useState('')
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' } | null>(null)
   const toggleSort = (key: SortKey) => setSort((s) => s?.key === key ? (s.dir === 'asc' ? { key, dir: 'desc' } : null) : { key, dir: 'asc' })
+  const [hidden, setHidden] = useState<Set<string>>(new Set())
+  const toggleCol = (k: string) => setHidden((prev) => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n })
+  const vis = (k: string) => !hidden.has(k)
+  const colCount = 2 + COLS.filter((c) => vis(c.key)).length
 
   // modais CRUD / ações
   const [formOpen, setFormOpen] = useState<{ lead: Lead | null } | null>(null)
@@ -233,9 +279,13 @@ export default function Leads() {
             <X className="h-3.5 w-3.5" /> Limpar
           </button>
         )}
-        <span className="ml-auto pr-2 text-[13px] tabular-nums text-muted-foreground">
-          <span className="font-semibold text-foreground">{rows.length}</span> {rows.length === 1 ? 'lead' : 'leads'}
-        </span>
+        <div className="ml-auto flex items-center gap-1">
+          <ColumnsMenu hidden={hidden} toggle={toggleCol} />
+          <span className="mx-1 h-5 w-px bg-border" />
+          <span className="pr-2 text-[13px] tabular-nums text-muted-foreground">
+            <span className="font-semibold text-foreground">{rows.length}</span> {rows.length === 1 ? 'lead' : 'leads'}
+          </span>
+        </div>
       </div>
 
       {/* tabela */}
@@ -245,20 +295,20 @@ export default function Leads() {
             <thead>
               <tr className="border-b border-border bg-muted/25 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 {th('lead', 'Lead')}
-                {th('phone', 'Telefone')}
-                {th('tier', 'Tier')}
-                {th('stage', 'Etapa')}
-                {th('status', 'Status')}
-                {th('owner', 'Responsável')}
-                {th('entrada', 'Entrada')}
-                {th('followup', 'Próx. retorno')}
+                {vis('phone') && th('phone', 'Telefone')}
+                {vis('tier') && th('tier', 'Tier')}
+                {vis('stage') && th('stage', 'Etapa')}
+                {vis('status') && th('status', 'Status')}
+                {vis('owner') && th('owner', 'Responsável')}
+                {vis('entrada') && th('entrada', 'Entrada')}
+                {vis('followup') && th('followup', 'Próx. retorno')}
                 <th className="px-2 py-3 text-right font-semibold">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="h-48 text-center">
+                  <td colSpan={colCount} className="h-48 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                       <Users className="h-10 w-10 text-muted-foreground/25" />
                       <p className="text-sm">Nenhum lead com esses filtros.</p>
@@ -278,13 +328,13 @@ export default function Leads() {
                       </div>
                     </div>
                   </td>
-                  <td className="whitespace-nowrap px-2 py-2.5 font-mono text-[12.5px] text-muted-foreground">{lead.phone ? formatPhone(lead.phone) : '—'}</td>
-                  <td className="px-2 py-2.5"><TierPill t={lead.tier} /></td>
-                  <td className="px-2 py-2.5"><StageChip id={lead.stage} /></td>
-                  <td className="whitespace-nowrap px-2 py-2.5"><StatusDot s={status} /></td>
-                  <td className="whitespace-nowrap px-2 py-2.5"><OwnerTag id={lead.ownerId} /></td>
-                  <td className="whitespace-nowrap px-2 py-2.5 font-mono text-[12.5px] tabular-nums text-muted-foreground">{entryDate(lead.entryDaysAgo)}</td>
-                  <td className="px-2 py-2.5"><FollowupCell days={lead.followupInDays} /></td>
+                  {vis('phone') && <td className="whitespace-nowrap px-2 py-2.5 font-mono text-[12.5px] text-muted-foreground">{lead.phone ? formatPhone(lead.phone) : '—'}</td>}
+                  {vis('tier') && <td className="px-2 py-2.5"><TierPill t={lead.tier} /></td>}
+                  {vis('stage') && <td className="px-2 py-2.5"><StageChip id={lead.stage} /></td>}
+                  {vis('status') && <td className="whitespace-nowrap px-2 py-2.5"><StatusDot s={status} /></td>}
+                  {vis('owner') && <td className="whitespace-nowrap px-2 py-2.5"><OwnerTag id={lead.ownerId} /></td>}
+                  {vis('entrada') && <td className="whitespace-nowrap px-2 py-2.5 font-mono text-[12.5px] tabular-nums text-muted-foreground">{entryDate(lead.entryDaysAgo)}</td>}
+                  {vis('followup') && <td className="px-2 py-2.5"><FollowupCell days={lead.followupInDays} /></td>}
                   <td className="px-2 py-2.5">
                     <div className="flex items-center justify-end gap-0 opacity-70 transition-opacity group-hover:opacity-100">
                       <RowAction icon={MessageCircle} label="Conversar" tone="teal" onClick={() => navigate('/app/chat')} />
