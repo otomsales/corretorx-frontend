@@ -1,0 +1,119 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Tipografia — Satoshi (UI) + Geist Mono (dados/números) */
+    --font-sans: 'Satoshi';
+    --font-mono: 'Geist Mono';
+
+    /* Light theme */
+    --background: 205 40% 97%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --primary: 172 66% 42%;
+    --primary-foreground: 168 80% 8%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 210 12% 42%;
+    --border: 214 22% 88%;
+    --input: 214 22% 86%;
+    --ring: 172 66% 42%;
+    --teal: 172 66% 42%;
+    --cyan: 187 82% 44%;
+    --danger: 0 74% 52%;
+    --success: 152 55% 38%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 44%;
+    --warning-foreground: 40 60% 12%;
+    /* estado ativo da navegação (shade real, não opacidade) */
+    --brand-soft: 172 55% 90%;
+    --brand-soft-foreground: 174 72% 26%;
+    --brand-soft-accent: 172 66% 38%;
+
+    /* Etapas do funil (identidade por etapa — vale nos dois temas) */
+    --stage-1: 205 90% 58%;
+    --stage-2: 190 85% 50%;
+    --stage-3: 172 66% 46%;
+    --stage-4: 258 82% 66%;
+    --stage-5: 38 92% 55%;
+    --stage-6: 152 60% 46%;
+    --stage-7: 0 74% 60%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* Dark theme — azul-escuro (navy) da marca CorretorX */
+    --background: 224 58% 6%;
+    --foreground: 210 34% 94%;
+    --card: 223 44% 10%;
+    --card-foreground: 210 34% 94%;
+    --primary: 172 66% 50%;
+    --primary-foreground: 168 80% 8%;
+    --muted: 221 34% 15%;
+    --muted-foreground: 214 22% 64%;
+    --border: 219 32% 19%;
+    --input: 219 32% 22%;
+    --ring: 172 66% 50%;
+    --teal: 172 66% 50%;
+    --cyan: 187 85% 53%;
+    --danger: 0 84% 70%;
+    --success: 152 55% 46%;
+    --success-foreground: 152 60% 8%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 40 60% 10%;
+    /* estado ativo da navegação (shade real, não opacidade) */
+    --brand-soft: 183 42% 15%;
+    --brand-soft-foreground: 172 70% 72%;
+    --brand-soft-accent: 172 66% 55%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Scrollbars finas e discretas — substitui a barra grossa padrão do browser */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.28) transparent;
+}
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.28);
+  border-radius: 9999px;
+  border: 2.5px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.45);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Animação de abertura de dropdowns */
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.dropdown-in { animation: dropdown-in 0.14s ease-out; transform-origin: top; }
