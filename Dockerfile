@@ -2,7 +2,9 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# npm install (não ci): resolve os binários nativos do Rollup/esbuild p/ linux-musl
+# — o lockfile gerado no Windows não inclui os optional deps de Linux.
+RUN npm install --no-audit --no-fund
 COPY . .
 RUN npm run build
 
