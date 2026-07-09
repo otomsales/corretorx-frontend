@@ -586,7 +586,7 @@ function StageColumn({ stage, leads, draggingId, stageColor, move }: {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id })
   const ids = leads.map((l) => l.id)
   return (
-    <section className="flex w-[300px] min-w-[288px] shrink-0 flex-col rounded-2xl border border-border bg-muted/25">
+    <section className="group/col flex w-[300px] min-w-[288px] shrink-0 flex-col rounded-2xl border border-border bg-muted/25">
       <header className="shrink-0 px-3 pt-3.5">
         <h2 className="text-center text-[12px] font-bold uppercase tracking-[0.08em] text-foreground">{stage.label}</h2>
         <div className="mt-2 h-[2.5px] w-full rounded-full" style={{ background: stage.color }} aria-hidden />
@@ -599,7 +599,7 @@ function StageColumn({ stage, leads, draggingId, stageColor, move }: {
       <div
         ref={setNodeRef}
         className={cn(
-          'm-1.5 flex min-h-[120px] flex-1 flex-col gap-2 overflow-y-auto rounded-xl p-1.5 transition-colors',
+          'col-scroll m-1.5 flex min-h-[120px] flex-1 flex-col gap-2 overflow-y-auto rounded-xl p-1.5 transition-colors',
           isOver && 'bg-teal/[0.06] ring-2 ring-teal/30',
         )}
       >

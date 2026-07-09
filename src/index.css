@@ -111,6 +111,12 @@
   background: transparent;
 }
 
+/* Scroll da coluna do funil: barra some por padrão, aparece só ao passar o mouse na coluna */
+.col-scroll { scrollbar-width: none; }
+.col-scroll::-webkit-scrollbar { width: 0; height: 0; }
+.group\/col:hover .col-scroll { scrollbar-width: thin; }
+.group\/col:hover .col-scroll::-webkit-scrollbar { width: 9px; height: 9px; }
+
 /* Animação de abertura de dropdowns */
 @keyframes dropdown-in {
   from { opacity: 0; transform: translateY(-4px) scale(0.98); }
