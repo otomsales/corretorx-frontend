@@ -46,14 +46,14 @@ export function ContextMenu({ menu, onClose }: { menu: MenuState; onClose: () =>
 }
 
 /* ============================ Barra de seleção ============================ */
-export function SelectionToolbar({ count, total, allSelected, onSelectAll, onClear, actions }: {
+export function SelectionToolbar({ count, total, allSelected, onSelectAll, onClear, actions, hideSelectAll }: {
   count: number; total: number; allSelected: boolean; onSelectAll: () => void; onClear: () => void
-  actions: { label: string; icon: LucideIcon; onClick: () => void; danger?: boolean }[]
+  actions: { label: string; icon: LucideIcon; onClick: () => void; danger?: boolean }[]; hideSelectAll?: boolean
 }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-teal/30 bg-teal/[0.06] px-3 py-2">
       <span className="text-[13px] font-semibold text-foreground">{count} selecionado{count > 1 ? 's' : ''}</span>
-      {!allSelected && <button onClick={onSelectAll} className="text-[12.5px] font-medium text-teal hover:underline">Selecionar todos ({total})</button>}
+      {!hideSelectAll && !allSelected && <button onClick={onSelectAll} className="text-[12.5px] font-medium text-teal hover:underline">Selecionar todos ({total})</button>}
       <button onClick={onClear} className="text-[12.5px] text-muted-foreground transition-colors hover:text-foreground">Limpar</button>
       <div className="ml-auto flex flex-wrap items-center gap-1.5">
         {actions.map((a) => (

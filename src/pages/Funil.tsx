@@ -36,7 +36,7 @@ interface MoveCtx {
   onMovePipeline: (leadId: string, pid: string) => void
 }
 
-type SelCtxType = { selected: Set<string>; toggle: (id: string) => void; onCtx: (e: React.MouseEvent, lead: Lead) => void }
+type SelCtxType = { selected: Set<string>; toggle: (id: string) => void; selectMany: (ids: string[], on: boolean) => void; onCtx: (e: React.MouseEvent, lead: Lead) => void }
 const SelCtx = createContext<SelCtxType | null>(null)
 
 const COMERCIAL_STAGES: Stage[] = [
@@ -274,6 +274,7 @@ export default function Funil() {
   const [target, setTarget] = useState<string[]>([])
   const { menu, open: openMenu, close: closeMenu } = useContextMenu()
   const toggleSel = (id: string) => setSelected((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const selectMany = (ids: string[], on: boolean) => setSelected((p) => { const n = new Set(p); ids.forEach((id) => on ? n.add(id) : n.delete(id)); return n })
   const clearSel = () => setSelected(new Set())
   const openBulk = (kind: typeof bulk, ids: string[]) => { setTarget(ids); setBulk(kind) }
   const doneBulk = (msg: string) => { setBulk(null); clearSel(); toast.success(msg) }
@@ -298,7 +299,7 @@ export default function Funil() {
     { divider: true, label: '' },
     { label: 'Excluir', icon: Trash2, danger: true, onClick: () => openBulk('delete', [lead.id]) },
   ]
-  const selValue: SelCtxType = { selected, toggle: toggleSel, onCtx: (e, lead) => openMenu(e, cardMenu(lead)) }
+  const selValue: SelCtxType = { selected, toggle: toggleSel, selectMany, onCtx: (e, lead) => openMenu(e, cardMenu(lead)) }
 
   const createLead = (d: Partial<Lead> & { name: string }) => {
     const newLead: Lead = {
@@ -520,7 +521,7 @@ export default function Funil() {
 
       {selCount > 0 && (
         <SelectionToolbar
-          count={selCount} total={boardIds.length} allSelected={allSelected} onSelectAll={selectAll} onClear={clearSel}
+          count={selCount} total={boardIds.length} allSelected={allSelected} onSelectAll={selectAll} onClear={clearSel} hideSelectAll
           actions={[
             { label: 'Mover etapa', icon: ArrowRightLeft, onClick: () => openBulk('stage', [...selected]) },
             { label: 'Etiquetar', icon: Tag, onClick: () => openBulk('tag', [...selected]) },
@@ -649,9 +650,19 @@ function StageColumn({ stage, leads, draggingId, stageColor, move }: {
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id })
   const ids = leads.map((l) => l.id)
+  const sel = useContext(SelCtx)
+  const stageOn = ids.filter((id) => sel?.selected.has(id)).length
+  const allOn = ids.length > 0 && stageOn === ids.length
+  const someOn = stageOn > 0
+  const anySel = (sel?.selected.size ?? 0) > 0
   return (
     <section className="group/col flex w-[300px] min-w-[288px] shrink-0 flex-col rounded-2xl border border-border bg-muted/25">
-      <header className="shrink-0 px-3 pt-3.5">
+      <header className="relative shrink-0 px-3 pt-3.5">
+        {sel && ids.length > 0 && (
+          <div className={cn('absolute left-3 top-3 transition-opacity', someOn || anySel ? 'opacity-100' : 'opacity-0 group-hover/col:opacity-100')} title="Selecionar etapa">
+            <Checkbox checked={allOn} indeterminate={someOn && !allOn} onChange={() => sel.selectMany(ids, !allOn)} />
+          </div>
+        )}
         <h2 className="text-center text-[12px] font-bold uppercase tracking-[0.08em] text-foreground">{stage.label}</h2>
         <div className="mt-2 h-[2.5px] w-full rounded-full" style={{ background: stage.color }} aria-hidden />
         <p className="mt-2 text-center text-[11.5px] text-muted-foreground">
