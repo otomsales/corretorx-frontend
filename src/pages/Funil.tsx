@@ -1,5 +1,6 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   DndContext, DragOverlay, KeyboardSensor, MeasuringStrategy, PointerSensor,
   closestCorners, useDroppable, useSensor, useSensors,
@@ -12,13 +13,17 @@ import { CSS } from '@dnd-kit/utilities'
 import {
   CalendarPlus, ChevronDown, ChevronUp, MessageCircle, PencilLine, TrendingUp, Plus,
   SlidersHorizontal, Trash2, Check, X, GitBranch, Clock, Zap, MapPin, Calendar, Briefcase,
-  Layers, Wallet, Target, Ticket, Search, ArrowRightLeft, type LucideIcon,
+  Layers, Wallet, Target, Ticket, Search, ArrowRightLeft, Tag, UserRound, Eye, type LucideIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { brl, pct, initials } from '@/lib/format'
 import { FUNIL_LEADS, OWNERS, LOSS_REASONS, type Lead } from '@/lib/funil-data'
 import { MultiFilterDropdown } from '@/components/ui/MultiFilterDropdown'
+import {
+  useContextMenu, ContextMenu, SelectionToolbar, Checkbox,
+  PickStageModal, PickOwnerModal, PickPipelineModal, AddTagModal, BulkDeleteModal, type MenuItem,
+} from '@/components/leads/Bulk'
 
 type Kind = 'open' | 'won' | 'lost'
 interface Stage { id: string; label: string; color: string; kind: Kind }
@@ -30,6 +35,9 @@ interface MoveCtx {
   onMoveStage: (leadId: string, to: string) => void
   onMovePipeline: (leadId: string, pid: string) => void
 }
+
+type SelCtxType = { selected: Set<string>; toggle: (id: string) => void; onCtx: (e: React.MouseEvent, lead: Lead) => void }
+const SelCtx = createContext<SelCtxType | null>(null)
 
 const COMERCIAL_STAGES: Stage[] = [
   { id: 'novo', label: 'Novo', color: 'hsl(var(--stage-1))', kind: 'open' },
@@ -259,6 +267,39 @@ export default function Funil() {
 
   const move: MoveCtx = { stages, pipelines, currentId: current.id, onMoveStage: moveLeadToStage, onMovePipeline: moveLeadToPipeline }
 
+  // seleção múltipla + ações em massa + menu de contexto
+  const navigate = useNavigate()
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulk, setBulk] = useState<null | 'stage' | 'owner' | 'tag' | 'pipeline' | 'delete'>(null)
+  const [target, setTarget] = useState<string[]>([])
+  const { menu, open: openMenu, close: closeMenu } = useContextMenu()
+  const toggleSel = (id: string) => setSelected((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const clearSel = () => setSelected(new Set())
+  const openBulk = (kind: typeof bulk, ids: string[]) => { setTarget(ids); setBulk(kind) }
+  const doneBulk = (msg: string) => { setBulk(null); clearSel(); toast.success(msg) }
+  const bulkStage = (stage: string) => { setLeads((prev) => prev.map((l) => (target.includes(l.id) ? { ...l, stage } : l))); doneBulk(`Etapa alterada (${target.length})`) }
+  const bulkOwner = (ownerId: string) => { setLeads((prev) => prev.map((l) => (target.includes(l.id) ? { ...l, ownerId } : l))); doneBulk(`Responsável alterado (${target.length})`) }
+  const bulkTag = (tag: string) => { setLeads((prev) => prev.map((l) => (target.includes(l.id) && !(l.tags ?? []).includes(tag) ? { ...l, tags: [...(l.tags ?? []), tag] } : l))); doneBulk(`Etiqueta "${tag}" aplicada (${target.length})`) }
+  const bulkPipeline = (pid: string) => { const p = pipelines.find((x) => x.id === pid); const first = p?.stages.find((s) => s.kind === 'open')?.id ?? p?.stages[0]?.id; setLeads((prev) => prev.map((l) => (target.includes(l.id) ? { ...l, pipelineId: pid, stage: first ?? l.stage } : l))); doneBulk(`Funil alterado (${target.length})`) }
+  const bulkDelete = () => { const n = target.length; setLeads((prev) => prev.filter((l) => !target.includes(l.id))); doneBulk(`${n} excluído${n > 1 ? 's' : ''}`) }
+  const allTags = useMemo(() => [...new Set(leads.flatMap((l) => l.tags ?? []))], [leads])
+  const boardIds = filtered.map((l) => l.id)
+  const selCount = boardIds.filter((id) => selected.has(id)).length
+  const allSelected = boardIds.length > 0 && selCount === boardIds.length
+  const selectAll = () => setSelected(new Set(boardIds))
+  const cardMenu = (lead: Lead): MenuItem[] => [
+    { label: 'Conversar', icon: MessageCircle, onClick: () => navigate('/app/chat') },
+    { label: 'Ver detalhe', icon: Eye, onClick: () => navigate(`/app/leads/${lead.id}`) },
+    { divider: true, label: '' },
+    { label: 'Mudar etapa', icon: ArrowRightLeft, onClick: () => openBulk('stage', [lead.id]) },
+    { label: 'Mudar funil', icon: GitBranch, onClick: () => openBulk('pipeline', [lead.id]) },
+    { label: 'Etiquetar', icon: Tag, onClick: () => openBulk('tag', [lead.id]) },
+    { label: 'Responsável', icon: UserRound, onClick: () => openBulk('owner', [lead.id]) },
+    { divider: true, label: '' },
+    { label: 'Excluir', icon: Trash2, danger: true, onClick: () => openBulk('delete', [lead.id]) },
+  ]
+  const selValue: SelCtxType = { selected, toggle: toggleSel, onCtx: (e, lead) => openMenu(e, cardMenu(lead)) }
+
   const createLead = (d: Partial<Lead> & { name: string }) => {
     const newLead: Lead = {
       id: `lead-${Date.now()}`, name: d.name, phone: d.phone ?? null,
@@ -303,6 +344,7 @@ export default function Funil() {
   }
 
   return (
+    <SelCtx.Provider value={selValue}>
     <div className="flex h-full flex-col gap-4 p-5 lg:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
@@ -476,6 +518,19 @@ export default function Funil() {
         </div>
       )}
 
+      {selCount > 0 && (
+        <SelectionToolbar
+          count={selCount} total={boardIds.length} allSelected={allSelected} onSelectAll={selectAll} onClear={clearSel}
+          actions={[
+            { label: 'Mover etapa', icon: ArrowRightLeft, onClick: () => openBulk('stage', [...selected]) },
+            { label: 'Etiquetar', icon: Tag, onClick: () => openBulk('tag', [...selected]) },
+            { label: 'Responsável', icon: UserRound, onClick: () => openBulk('owner', [...selected]) },
+            { label: 'Mudar funil', icon: GitBranch, onClick: () => openBulk('pipeline', [...selected]) },
+            { label: 'Excluir', icon: Trash2, danger: true, onClick: () => openBulk('delete', [...selected]) },
+          ]}
+        />
+      )}
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -505,7 +560,16 @@ export default function Funil() {
         />
       )}
       {createOpen && <NewPipelineModal onCancel={() => setCreateOpen(false)} onCreate={createPipeline} />}
+
+      {/* ações em massa / botão direito */}
+      {bulk === 'stage' && <PickStageModal subtitle={`${target.length} lead${target.length > 1 ? 's' : ''}`} onPick={bulkStage} onClose={() => setBulk(null)} />}
+      {bulk === 'owner' && <PickOwnerModal subtitle={`${target.length} lead${target.length > 1 ? 's' : ''}`} onPick={bulkOwner} onClose={() => setBulk(null)} />}
+      {bulk === 'pipeline' && <PickPipelineModal subtitle={`${target.length} lead${target.length > 1 ? 's' : ''}`} pipelines={pipelines} onPick={bulkPipeline} onClose={() => setBulk(null)} />}
+      {bulk === 'tag' && <AddTagModal subtitle={`${target.length} lead${target.length > 1 ? 's' : ''}`} suggestions={allTags} onApply={bulkTag} onClose={() => setBulk(null)} />}
+      {bulk === 'delete' && <BulkDeleteModal count={target.length} onConfirm={bulkDelete} onClose={() => setBulk(null)} />}
+      <ContextMenu menu={menu} onClose={closeMenu} />
     </div>
+    </SelCtx.Provider>
   )
 }
 
@@ -736,6 +800,9 @@ function MoveMenu({ lead, move }: { lead: Lead; move: MoveCtx }) {
 function LeadCardBody({ lead, stageColor, overlay = false, interactive = false, move }: {
   lead: Lead; stageColor: Record<string, string>; overlay?: boolean; interactive?: boolean; move?: MoveCtx
 }) {
+  const sel = useContext(SelCtx)
+  const on = !!sel?.selected.has(lead.id)
+  const anySel = (sel?.selected.size ?? 0) > 0
   const owner = OWNERS.find((p) => p.id === lead.ownerId) ?? null
   const color = stageColor[lead.stage] ?? 'hsl(var(--muted-foreground))'
   const abandoned = (lead.noContactHours ?? 0) >= ABANDON_HOURS
@@ -758,9 +825,11 @@ function LeadCardBody({ lead, stageColor, overlay = false, interactive = false, 
   if (hiddenTags.length > 0 && shownTags.length > 0 && used + 30 > BUDGET) { shownTags.pop(); hiddenTags = tags.slice(shownTags.length) }
   return (
     <article
+      onContextMenu={interactive && sel ? (e) => sel.onCtx(e, lead) : undefined}
       className={cn(
         'group relative flex min-h-[172px] flex-col overflow-hidden rounded-xl border p-3.5 pl-4 transition',
         'border-black/[0.07] dark:border-white/[0.05]',
+        on && 'ring-2 ring-teal',
         overlay
           ? 'w-[280px] rotate-2 cursor-grabbing bg-card shadow-[0_18px_40px_-10px_rgba(0,0,0,0.28)] dark:shadow-[0_22px_48px_-10px_rgba(0,0,0,0.8)]'
           : 'bg-[hsl(var(--card)/0.9)] backdrop-blur-xl backdrop-saturate-150 dark:bg-[hsl(var(--card)/0.55)] shadow-[0_4px_16px_-6px_rgba(15,23,42,0.16)] hover:border-teal/40 hover:shadow-[0_10px_26px_-8px_rgba(15,23,42,0.22)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_10px_30px_-10px_rgba(0,0,0,0.7)] dark:hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_18px_42px_-12px_rgba(0,0,0,0.8)]',
@@ -770,6 +839,14 @@ function LeadCardBody({ lead, stageColor, overlay = false, interactive = false, 
       }}
     >
       <span className="absolute inset-y-0 left-0 w-1" style={{ background: stripe }} aria-hidden />
+      {interactive && sel && (
+        <div
+          onPointerDown={(e) => e.stopPropagation()}
+          className={cn('absolute left-1.5 top-1.5 z-20 grid place-items-center rounded-md bg-card/90 p-0.5 shadow-sm backdrop-blur-sm transition-opacity', on || anySel ? 'opacity-100' : 'opacity-0 group-hover:opacity-100')}
+        >
+          <Checkbox checked={on} onChange={() => sel.toggle(lead.id)} />
+        </div>
+      )}
 
       {/* Topo: avatar (foto WhatsApp) + nome + valor verde + ações no hover */}
       <div className="flex items-start gap-2.5">

@@ -63,6 +63,11 @@ export function lifecycleOf(lead: Lead): NonNullable<Lead['lifecycle']> {
   return 'ativo'
 }
 
+export const PIPELINES = [
+  { id: 'p-comercial', name: 'Comercial' },
+  { id: 'p-ia', name: 'Atendimento IA' },
+]
+
 export const OWNERS = [
   { id: 'u1', name: 'Larissa Boss', avatar: 'https://i.pravatar.cc/60?img=47' },
   { id: 'u2', name: 'Rafael Nunes', avatar: 'https://i.pravatar.cc/60?img=12' },

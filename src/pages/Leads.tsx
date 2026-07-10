@@ -1,16 +1,20 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Search, ChevronDown, ChevronUp, ChevronsUpDown, Check, X, Plus, MessageCircle, Activity, ArrowRightLeft, Pencil, Trash2, Eye, Users, Columns3,
+  Search, ChevronDown, ChevronUp, ChevronsUpDown, Check, X, Plus, MessageCircle, Activity, ArrowRightLeft, Pencil, Trash2, Eye, Users, Columns3, Tag, GitBranch, UserRound,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { formatPhone } from '@/lib/format'
-import { OWNERS, STAGE_CATALOG, lifecycleOf, type Lead } from '@/lib/funil-data'
+import { OWNERS, STAGE_CATALOG, PIPELINES, lifecycleOf, type Lead } from '@/lib/funil-data'
 import { useLeads } from '@/store/leads'
 import { TierPill, StatusDot, StageChip, FollowupCell, LeadAvatar, OwnerTag } from '@/components/leads/LeadBadges'
 import { LeadFormModal, LogContactModal, MoveStageModal, ConfirmDeleteModal } from '@/components/leads/LeadModals'
 import { MultiFilterDropdown } from '@/components/ui/MultiFilterDropdown'
+import {
+  useContextMenu, ContextMenu, SelectionToolbar, Checkbox,
+  PickStageModal, PickOwnerModal, PickPipelineModal, AddTagModal, BulkDeleteModal, type MenuItem,
+} from '@/components/leads/Bulk'
 
 /* ---------- opções de filtro ---------- */
 const TIER_OPTS = [
@@ -167,13 +171,29 @@ export default function Leads() {
   const [hidden, setHidden] = useState<Set<string>>(new Set())
   const toggleCol = (k: string) => setHidden((prev) => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n })
   const vis = (k: string) => !hidden.has(k)
-  const colCount = 2 + COLS.filter((c) => vis(c.key)).length
+  const colCount = 3 + COLS.filter((c) => vis(c.key)).length // +checkbox +lead +ações
 
   // modais CRUD / ações
   const [formOpen, setFormOpen] = useState<{ lead: Lead | null } | null>(null)
   const [logLead, setLogLead] = useState<Lead | null>(null)
   const [moveLead, setMoveLead] = useState<Lead | null>(null)
   const [delLead, setDelLead] = useState<Lead | null>(null)
+
+  // seleção múltipla + ações em massa + menu de contexto
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulk, setBulk] = useState<null | 'stage' | 'owner' | 'tag' | 'pipeline' | 'delete'>(null)
+  const [target, setTarget] = useState<string[]>([]) // ids-alvo (seleção ou 1 do botão direito)
+  const { menu, open: openMenu, close: closeMenu } = useContextMenu()
+  const toggleSel = (id: string) => setSelected((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const clearSel = () => setSelected(new Set())
+  const openBulk = (kind: typeof bulk, ids: string[]) => { setTarget(ids); setBulk(kind) }
+  const doneBulk = (msg: string) => { setBulk(null); clearSel(); toast.success(msg) }
+  const bulkStage = (stage: string) => { target.forEach((id) => storeMove(id, stage)); doneBulk(`Etapa → ${STAGE_CATALOG[stage]?.label ?? stage} (${target.length})`) }
+  const bulkOwner = (ownerId: string) => { target.forEach((id) => { const l = leads.find((x) => x.id === id); if (l) storeSave({ ...l, ownerId }) }); doneBulk(`Responsável alterado (${target.length})`) }
+  const bulkTag = (tag: string) => { target.forEach((id) => { const l = leads.find((x) => x.id === id); if (l && !(l.tags ?? []).includes(tag)) storeSave({ ...l, tags: [...(l.tags ?? []), tag] }) }); doneBulk(`Etiqueta "${tag}" aplicada (${target.length})`) }
+  const bulkPipeline = (pid: string) => { target.forEach((id) => { const l = leads.find((x) => x.id === id); if (l) storeSave({ ...l, pipelineId: pid }) }); doneBulk(`Funil alterado (${target.length})`) }
+  const bulkDelete = () => { const n = target.length; target.forEach((id) => storeRemove(id)); doneBulk(`${n} lead${n > 1 ? 's excluídos' : ' excluído'}`) }
+  const allTags = useMemo(() => [...new Set(leads.flatMap((l) => l.tags ?? []))], [leads])
 
   const ownerName = (id: string | null) => OWNERS.find((o) => o.id === id)?.name ?? '—'
 
@@ -227,6 +247,27 @@ export default function Leads() {
 
   const hasFilters = !!(q || fTier.length || fStatus.length || fStage.length || fOwner.length || fPeriod)
   const clear = () => { setQ(''); setFTier([]); setFStatus([]); setFStage([]); setFOwner([]); setFPeriod(''); setFFrom(''); setFTo('') }
+
+  // seleção derivada dos rows visíveis
+  const visibleIds = rows.map((r) => r.lead.id)
+  const selCount = visibleIds.filter((id) => selected.has(id)).length
+  const allSelected = rows.length > 0 && selCount === rows.length
+  const selectAll = () => setSelected(new Set(visibleIds))
+
+  // menu de botão direito por lead
+  const rowMenu = (lead: Lead): MenuItem[] => [
+    { label: 'Conversar', icon: MessageCircle, onClick: () => navigate('/app/chat') },
+    { label: 'Ver detalhe', icon: Eye, onClick: () => navigate(`/app/leads/${lead.id}`) },
+    { label: 'Editar', icon: Pencil, onClick: () => setFormOpen({ lead }) },
+    { divider: true, label: '' },
+    { label: 'Registrar contato', icon: Activity, onClick: () => setLogLead(lead) },
+    { label: 'Mover etapa', icon: ArrowRightLeft, onClick: () => openBulk('stage', [lead.id]) },
+    { label: 'Etiquetar', icon: Tag, onClick: () => openBulk('tag', [lead.id]) },
+    { label: 'Mudar responsável', icon: UserRound, onClick: () => openBulk('owner', [lead.id]) },
+    { label: 'Mudar funil', icon: GitBranch, onClick: () => openBulk('pipeline', [lead.id]) },
+    { divider: true, label: '' },
+    { label: 'Excluir', icon: Trash2, danger: true, onClick: () => openBulk('delete', [lead.id]) },
+  ]
 
   const th = (k: SortKey, label: string, extra = '') => (
     <th className={cn('px-2 py-3 font-semibold', extra)}>
@@ -288,12 +329,27 @@ export default function Leads() {
         </div>
       </div>
 
+      {/* barra de seleção */}
+      {selCount > 0 && (
+        <SelectionToolbar
+          count={selCount} total={rows.length} allSelected={allSelected} onSelectAll={selectAll} onClear={clearSel}
+          actions={[
+            { label: 'Mover etapa', icon: ArrowRightLeft, onClick: () => openBulk('stage', [...selected]) },
+            { label: 'Etiquetar', icon: Tag, onClick: () => openBulk('tag', [...selected]) },
+            { label: 'Responsável', icon: UserRound, onClick: () => openBulk('owner', [...selected]) },
+            { label: 'Mudar funil', icon: GitBranch, onClick: () => openBulk('pipeline', [...selected]) },
+            { label: 'Excluir', icon: Trash2, danger: true, onClick: () => openBulk('delete', [...selected]) },
+          ]}
+        />
+      )}
+
       {/* tabela */}
       <div className="overflow-hidden rounded-xl border border-border bg-card">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] table-auto border-collapse text-left">
             <thead>
               <tr className="border-b border-border bg-muted/25 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <th className="w-9 px-2 py-3"><Checkbox checked={allSelected} indeterminate={selCount > 0 && !allSelected} onChange={() => (allSelected || selCount > 0 ? clearSel() : selectAll())} /></th>
                 {th('lead', 'Lead')}
                 {vis('phone') && th('phone', 'Telefone')}
                 {vis('tier') && th('tier', 'Tier')}
@@ -316,7 +372,13 @@ export default function Leads() {
                   </td>
                 </tr>
               ) : rows.map(({ lead, status }) => (
-                <tr key={lead.id} onClick={() => navigate(`/app/leads/${lead.id}`)} className="group cursor-pointer transition-colors hover:bg-foreground/[0.025]">
+                <tr
+                  key={lead.id}
+                  onClick={() => navigate(`/app/leads/${lead.id}`)}
+                  onContextMenu={(e) => openMenu(e, rowMenu(lead))}
+                  className={cn('group cursor-pointer transition-colors', selected.has(lead.id) ? 'bg-teal/[0.07]' : 'hover:bg-foreground/[0.025]')}
+                >
+                  <td className="px-2 py-2.5"><Checkbox checked={selected.has(lead.id)} onChange={() => toggleSel(lead.id)} /></td>
                   <td className="px-2 py-2.5">
                     <div className="flex items-center gap-3">
                       <LeadAvatar lead={lead} />
@@ -357,6 +419,14 @@ export default function Leads() {
       {logLead && <LogContactModal lead={logLead} onClose={() => setLogLead(null)} onSave={(d) => logContact(logLead, d)} />}
       {moveLead && <MoveStageModal lead={moveLead} onClose={() => setMoveLead(null)} onMove={(s) => moveStage(moveLead, s)} />}
       {delLead && <ConfirmDeleteModal lead={delLead} onClose={() => setDelLead(null)} onConfirm={() => removeLead(delLead)} />}
+
+      {/* ações em massa / botão direito */}
+      {bulk === 'stage' && <PickStageModal subtitle={`${target.length} lead${target.length > 1 ? 's' : ''}`} onPick={bulkStage} onClose={() => setBulk(null)} />}
+      {bulk === 'owner' && <PickOwnerModal subtitle={`${target.length} lead${target.length > 1 ? 's' : ''}`} onPick={bulkOwner} onClose={() => setBulk(null)} />}
+      {bulk === 'pipeline' && <PickPipelineModal subtitle={`${target.length} lead${target.length > 1 ? 's' : ''}`} pipelines={PIPELINES} onPick={bulkPipeline} onClose={() => setBulk(null)} />}
+      {bulk === 'tag' && <AddTagModal subtitle={`${target.length} lead${target.length > 1 ? 's' : ''}`} suggestions={allTags} onApply={bulkTag} onClose={() => setBulk(null)} />}
+      {bulk === 'delete' && <BulkDeleteModal count={target.length} onConfirm={bulkDelete} onClose={() => setBulk(null)} />}
+      <ContextMenu menu={menu} onClose={closeMenu} />
     </div>
   )
 }
