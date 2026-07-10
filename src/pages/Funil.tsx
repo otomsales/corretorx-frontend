@@ -853,7 +853,7 @@ function LeadCardBody({ lead, stageColor, overlay = false, interactive = false, 
       {interactive && sel && (
         <div
           onPointerDown={(e) => e.stopPropagation()}
-          className={cn('absolute left-1.5 top-1.5 z-20 rounded-md bg-white p-0.5 shadow-md ring-1 ring-black/10 transition-opacity', on || anySel ? 'opacity-100' : 'opacity-0 group-hover:opacity-100')}
+          className={cn('absolute left-1.5 top-1.5 z-20 grid place-items-center rounded-[5px] bg-white shadow-sm transition-opacity', on || anySel ? 'opacity-100' : 'opacity-0 group-hover:opacity-100')}
         >
           <Checkbox checked={on} onChange={() => sel.toggle(lead.id)} />
         </div>
