@@ -252,10 +252,10 @@ export function Sidebar() {
       {/* Marca — logo + empresa empilhados, botão recolher na mesma linha (estilo Kommo) */}
       <div className="relative flex h-16 items-center justify-between gap-2 px-4">
         <div className="min-w-0 leading-tight">
-          <span className="block text-[17px] font-extrabold tracking-tight">
+          <span className="block text-[22px] font-extrabold leading-none tracking-tight">
             CORRETOR<span className="bg-gradient-to-br from-[#2DD4BF] to-[#22D3EE] bg-clip-text text-transparent">X</span>
           </span>
-          <span className="block text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Corretora Aurora</span>
+          <span className="mt-1 block text-[9.5px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Corretora Aurora</span>
         </div>
         <button className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" title="Recolher menu">
           <PanelLeftClose className="h-[18px] w-[18px]" strokeWidth={2} />
@@ -265,7 +265,7 @@ export function Sidebar() {
       </div>
 
       {/* Saudação + usuário */}
-      <div className="flex items-center gap-2.5 border-b border-border/50 px-3 py-3">
+      <div className="relative flex items-center gap-2.5 px-3 py-3">
         <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#2DD4BF] to-[#22D3EE] text-[14px] font-bold text-primary-foreground shadow-[0_6px_16px_-6px_rgba(34,211,238,.6)]">
           LB
         </div>
@@ -273,6 +273,8 @@ export function Sidebar() {
           <p className="truncate text-[11px] text-muted-foreground">Olá 👋</p>
           <p className="truncate text-[14px] font-bold text-foreground">Larissa Boss</p>
         </div>
+        {/* traço parcial centralizado (igual ao de cima) */}
+        <div className="absolute bottom-0 left-1/2 h-px w-28 -translate-x-1/2 bg-border/60" />
       </div>
 
       {/* Navegação */}
@@ -284,13 +286,13 @@ export function Sidebar() {
           const hasActive = g.items.some((i) => pathname === i.to || pathname.startsWith(i.to + '/'))
           return (
             <div key={g.key} className="relative pt-4">
-              {/* destaque verde da categoria ativa (rail arredondado) */}
-              {hasActive && <span aria-hidden className="pointer-events-none absolute left-0 top-[18px] h-[26px] w-1.5 rounded-full bg-gradient-to-b from-emerald-400 to-teal-400 shadow-[0_0_12px_-1px_rgba(52,211,153,0.7)]" />}
+              {/* destaque verde da categoria ativa (rail sólido, sem glow) */}
+              {hasActive && <span aria-hidden className="pointer-events-none absolute left-0 top-[17px] h-7 w-1 rounded-full bg-emerald-400" />}
               <button
                 onClick={() => toggle(g.key)}
                 className={cn(
-                  'flex w-full items-center gap-2 rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.13em] transition-colors',
-                  hasActive ? 'bg-foreground/[0.045] text-foreground/85' : 'text-muted-foreground/55 hover:text-muted-foreground',
+                  'flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] transition-colors',
+                  hasActive ? 'bg-foreground/[0.06] text-foreground/90' : 'text-muted-foreground/55 hover:text-muted-foreground',
                 )}
               >
                 <g.icon className={cn('h-3.5 w-3.5 shrink-0', hasActive ? 'text-[hsl(var(--brand-soft-accent))]' : 'opacity-60')} />
