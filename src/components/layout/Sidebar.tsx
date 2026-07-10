@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Briefcase, Workflow, ShieldCheck, Wallet, Settings,
-  ChevronDown, ChevronLeft, MessagesSquare, Maximize2, X, Paperclip, Mic, type LucideIcon,
+  ChevronDown, ChevronLeft, MessagesSquare, Maximize2, X, Paperclip, Mic, PanelLeftClose, type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -252,12 +252,19 @@ export function Sidebar() {
 
   return (
     <aside className="relative z-20 flex h-full w-[248px] flex-col border-r border-white/[0.09] bg-[hsl(var(--card)/0.32)] shadow-[inset_-1px_0_0_rgba(255,255,255,0.05),4px_0_22px_-12px_rgba(0,0,0,0.35)] backdrop-blur-2xl backdrop-saturate-[1.6]">
-      {/* Marca */}
-      <div className="flex h-16 flex-col justify-center border-b border-border/50 px-4 leading-tight">
-        <span className="text-[17px] font-extrabold tracking-tight">
-          CORRETOR<span className="bg-gradient-to-br from-[#2DD4BF] to-[#22D3EE] bg-clip-text text-transparent">X</span>
-        </span>
-        <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Corretora Aurora</span>
+      {/* Marca — logo + empresa empilhados, botão recolher na mesma linha (estilo Kommo) */}
+      <div className="relative flex h-16 items-center justify-between gap-2 px-4">
+        <div className="min-w-0 leading-tight">
+          <span className="block text-[17px] font-extrabold tracking-tight">
+            CORRETOR<span className="bg-gradient-to-br from-[#2DD4BF] to-[#22D3EE] bg-clip-text text-transparent">X</span>
+          </span>
+          <span className="block text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Corretora Aurora</span>
+        </div>
+        <button className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" title="Recolher menu">
+          <PanelLeftClose className="h-[18px] w-[18px]" strokeWidth={2} />
+        </button>
+        {/* traço parcial — não vai até o fim */}
+        <div className="absolute bottom-0 left-4 h-px w-28 bg-border/60" />
       </div>
 
       {/* Saudação + usuário */}
@@ -269,9 +276,6 @@ export function Sidebar() {
           <p className="truncate text-[11px] text-muted-foreground">Olá 👋</p>
           <p className="truncate text-[14px] font-bold text-foreground">Larissa Boss</p>
         </div>
-        <button className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-teal text-primary-foreground shadow-[0_4px_12px_-3px_rgba(34,211,238,.7)] transition hover:brightness-110" title="Recolher menu">
-          <ChevronLeft className="h-3.5 w-3.5" strokeWidth={2.5} />
-        </button>
       </div>
 
       {/* Navegação */}

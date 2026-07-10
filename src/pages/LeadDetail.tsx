@@ -40,10 +40,10 @@ function useCreatable(base: Opt[]) {
 function Section({ icon: Icon, title, accent, children }: { icon: LucideIcon; title: string; accent?: boolean; children: ReactNode }) {
   return (
     <section>
-      <div className="mb-3.5 flex items-center gap-2.5">
-        <Icon className={cn('h-4 w-4 shrink-0', accent ? 'text-teal' : 'text-muted-foreground/70')} />
-        <span className={cn('text-[12px] font-bold uppercase tracking-[0.09em]', accent ? 'text-teal' : 'text-muted-foreground')}>{title}</span>
-        <div className={cn('h-px flex-1', accent ? 'bg-teal/25' : 'bg-border/60')} />
+      <div className="mb-4 flex items-center gap-2">
+        <Icon className={cn('h-[15px] w-[15px] shrink-0', accent ? 'text-teal' : 'text-muted-foreground')} />
+        <h3 className={cn('text-[13px] font-semibold leading-none tracking-[-0.01em]', accent ? 'text-teal' : 'text-foreground')}>{title}</h3>
+        <div className={cn('h-px flex-1', accent ? 'bg-teal/20' : 'bg-border/50')} />
       </div>
       {children}
     </section>
@@ -63,7 +63,7 @@ function EditField({ label, value, display, type = 'text', options, creatable, i
   const cancel = () => { setEditing(false); setOpen(false) }
   return (
     <div className="min-w-0">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">{label}</p>
+      <p className="text-[10px] font-medium uppercase tracking-[0.07em] text-muted-foreground/55">{label}</p>
       {!editing ? (
         <button onClick={start} title="Clique para editar" className="group/e -mx-1.5 mt-1 flex w-full items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[15px] text-foreground transition-colors hover:bg-foreground/[0.05]">
           {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />}
@@ -277,7 +277,7 @@ export default function LeadDetail() {
                 <EditField label="Origem" type="select" creatable options={org.options(cur.source)} value={cur.source ?? ''} display={cur.source ?? '—'} onCommit={(v) => { org.remember(v); edit({ source: v.trim() || null }) }} />
               </div>
               {cur.tags && cur.tags.length > 0 && (
-                <div className="mt-4 flex flex-wrap items-center gap-1.5"><span className="mr-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">Etiquetas</span>{cur.tags.map((t) => <TagChip key={t} tag={t} />)}</div>
+                <div className="mt-4 flex flex-wrap items-center gap-1.5"><span className="mr-0.5 text-[10px] font-medium uppercase tracking-[0.07em] text-muted-foreground/55">Etiquetas</span>{cur.tags.map((t) => <TagChip key={t} tag={t} />)}</div>
               )}
             </Section>
 
@@ -289,7 +289,7 @@ export default function LeadDetail() {
                 <EditField label="Valor / mês" type="currency" value={centsToReais(cur.value)} display={cur.value ? brl(cur.value) : '—'} onCommit={(v) => edit({ value: reaisToCents(v) })} />
               </div>
               <div className="mt-4 border-t border-border/50 pt-3">
-                <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70"><Users className="h-3.5 w-3.5" /> Vidas / idades</div>
+                <div className="mb-2 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.07em] text-muted-foreground/55"><Users className="h-3.5 w-3.5" /> Vidas / idades</div>
                 <div className="space-y-1.5">
                   {(cur.lives ?? []).map((l, i) => (
                     <div key={i} className="group/l flex items-center gap-2 rounded-lg border-l-2 border-teal/60 bg-foreground/[0.03] px-2.5 py-1.5 text-[13px]">
@@ -310,13 +310,13 @@ export default function LeadDetail() {
                 <EditField label="Produto sugerido" value={cur.produtoSugerido ?? ''} onCommit={(v) => edit({ produtoSugerido: v.trim() || undefined })} />
                 <EditField label="Valor estimado" type="currency" value={centsToReais(cur.valorEstimado)} display={cur.valorEstimado ? brl(cur.valorEstimado) : '—'} onCommit={(v) => edit({ valorEstimado: reaisToCents(v) })} />
                 <div className="min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">Perfil DISC</p>
+                  <p className="text-[10px] font-medium uppercase tracking-[0.07em] text-muted-foreground/55">Perfil DISC</p>
                   <div className="mt-1.5"><ChipEdit value={cur.disc} opts={DISC_OPTS} placeholder="+ perfil" onChange={(d) => edit({ disc: d })} /></div>
                 </div>
                 <EditField label="Próxima ação" value={cur.proximaAcao ?? ''} onCommit={(v) => edit({ proximaAcao: v.trim() || undefined })} />
               </div>
               <div className="mt-3.5">
-                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">Contexto da negociação</p>
+                <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.07em] text-muted-foreground/55">Contexto da negociação</p>
                 <textarea value={cur.contexto ?? ''} onChange={(e) => edit({ contexto: e.target.value })} rows={2} placeholder="Objeções, concorrência, sensibilidade a preço…" className="w-full resize-none rounded-lg border border-input bg-background p-2.5 text-[13.5px] leading-relaxed outline-none transition-colors placeholder:text-muted-foreground/45 focus:border-teal focus:ring-[2.5px] focus:ring-teal/20" />
               </div>
             </Section>
@@ -325,7 +325,7 @@ export default function LeadDetail() {
               <div className="grid grid-cols-2 gap-x-4 gap-y-3.5">
                 <EditField label="UTM Source" value={cur.utmSource ?? ''} onCommit={(v) => edit({ utmSource: v.trim() || undefined })} />
                 <EditField label="UTM Campaign" value={cur.utmCampaign ?? ''} onCommit={(v) => edit({ utmCampaign: v.trim() || undefined })} />
-                <div className="min-w-0"><p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">Data de entrada</p><p className="mt-1 text-[15px] text-foreground">{relD(cur.entryDaysAgo)}</p></div>
+                <div className="min-w-0"><p className="text-[10px] font-medium uppercase tracking-[0.07em] text-muted-foreground/55">Data de entrada</p><p className="mt-1 text-[15px] text-foreground">{relD(cur.entryDaysAgo)}</p></div>
               </div>
             </Section>
 
