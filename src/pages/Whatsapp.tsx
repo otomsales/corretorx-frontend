@@ -198,7 +198,6 @@ function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
           </div>
         </button>
         <div className="flex items-center gap-1">
-          {conv.aiOn && <span className="mr-1 hidden items-center gap-1 rounded-full bg-teal/15 px-2 py-1 text-[11px] font-semibold text-teal xl:flex"><Sparkles className="h-3 w-3" /> X IA</span>}
           <button title="Ligar" className={cn('grid h-9 w-9 place-items-center rounded-full', wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Phone className="h-[18px] w-[18px]" /></button>
           <button title="Buscar" className={cn('grid h-9 w-9 place-items-center rounded-full', wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Search className="h-[18px] w-[18px]" /></button>
           <button title="Painel do lead" onClick={onTogglePanel} className={cn('grid h-9 w-9 place-items-center rounded-full hover:bg-black/5 dark:hover:bg-white/10', panelOpen ? 'text-teal' : wa.sub)}><MoreVertical className="h-5 w-5" /></button>
@@ -208,6 +207,11 @@ function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
       {/* mensagens */}
       <div className={cn('col-scroll relative flex-1 overflow-y-auto py-4', wa.wall)} style={{ backgroundImage: DOODLE }}>
         <div className="mx-auto flex max-w-3xl flex-col gap-1.5">
+          {conv.aiOn && (
+            <div className="sticky top-0 z-10 mx-auto mb-1.5 flex justify-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-teal/90 px-3 py-1 text-[11.5px] font-semibold text-primary-foreground shadow-md ring-1 ring-white/10 backdrop-blur-sm"><Sparkles className="h-3 w-3" /> X IA ativa nesta conversa</span>
+            </div>
+          )}
           <div className="mx-auto mb-2 flex items-center gap-1.5 rounded-lg bg-[#fdf4c5] px-3 py-1.5 text-center text-[11.5px] text-[#54656f] shadow-sm dark:bg-[#182229] dark:text-[#8696a0]">
             <Lock className="h-3 w-3" /> As mensagens são protegidas com criptografia de ponta a ponta.
           </div>
@@ -288,9 +292,6 @@ function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
               <StatusDot s={lifecycleOf(lead)} />
               <TierPill t={lead.tier} />
             </div>
-          )}
-          {conv.aiOn && (
-            <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-teal/12 px-2.5 py-1 text-[11.5px] font-semibold text-teal"><Sparkles className="h-3 w-3" /> X IA ativa nesta conversa</span>
           )}
         </div>
 
