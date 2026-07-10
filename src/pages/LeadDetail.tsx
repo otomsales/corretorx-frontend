@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  X, Phone, PhoneCall, MessageCircle, User, HeartPulse, Clock, History, Sparkles, FileText,
+  X, Phone, PhoneCall, MessageCircle, User, HeartPulse, Clock, History, FileText,
   MapPin, Zap, GitBranch, UserPlus, ChevronDown, Check, Plus, Paperclip, Mail, Target, Users, Megaphone, type LucideIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -11,7 +11,6 @@ import { OWNERS, STAGE_CATALOG, DISC_OPTS, REL_OPTS, lifecycleOf, type Lead } fr
 import { useLeads } from '@/store/leads'
 import { StatusDot, FollowupCell, LeadAvatar } from '@/components/leads/LeadBadges'
 import { TagChip } from '@/lib/tags'
-import { XiaSummary } from '@/components/leads/XiaSummary'
 
 const SHADOW = 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_16px_32px_-10px_rgba(0,0,0,0.55),0_44px_72px_-16px_rgba(0,0,0,0.7)]'
 const OPERADORA_OPTS = ['Amil', 'Bradesco Saúde', 'SulAmérica', 'Hapvida', 'Unimed', 'NotreDame'].map((o) => ({ value: o, label: o }))
@@ -340,12 +339,8 @@ export default function LeadDetail() {
             </Section>
           </div>
 
-          {/* coluna direita — IA / anotações / anexos / histórico */}
+          {/* coluna direita — anotações / anexos / histórico */}
           <div className="space-y-8">
-            <Section icon={Sparkles} title="Resumo X IA" accent>
-              <XiaSummary lead={cur} />
-            </Section>
-
             <Section icon={FileText} title="Anotações">
               <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={4} placeholder="Registre observações sobre este lead…" className="w-full resize-none rounded-lg border border-input bg-background p-3 text-[14.5px] leading-relaxed outline-none transition-colors placeholder:text-muted-foreground/45 focus:border-teal focus:ring-[2.5px] focus:ring-teal/20" />
               <div className="mt-2.5 flex justify-end"><button onClick={() => { if (note.trim()) { toast.success('Anotação adicionada'); setNote('') } }} disabled={!note.trim()} className="rounded-lg bg-teal px-3.5 py-1.5 text-[12px] font-bold text-primary-foreground transition hover:brightness-110 disabled:opacity-40">Adicionar nota</button></div>
