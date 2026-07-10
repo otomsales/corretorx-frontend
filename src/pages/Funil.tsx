@@ -839,18 +839,22 @@ function LeadCardBody({ lead, stageColor, overlay = false, interactive = false, 
       }}
     >
       <span className="absolute inset-y-0 left-0 w-1" style={{ background: stripe }} aria-hidden />
-      {interactive && sel && (
-        <div
-          onPointerDown={(e) => e.stopPropagation()}
-          className={cn('absolute left-1.5 top-1.5 z-20 grid place-items-center rounded-md bg-card/90 p-0.5 shadow-sm backdrop-blur-sm transition-opacity', on || anySel ? 'opacity-100' : 'opacity-0 group-hover:opacity-100')}
-        >
-          <Checkbox checked={on} onChange={() => sel.toggle(lead.id)} />
-        </div>
-      )}
 
       {/* Topo: avatar (foto WhatsApp) + nome + valor verde + ações no hover */}
       <div className="flex items-start gap-2.5">
-        <LeadAvatar name={lead.name} url={lead.avatarUrl} color={color} />
+        <div className="relative shrink-0">
+          <LeadAvatar name={lead.name} url={lead.avatarUrl} color={color} />
+          {interactive && sel && (
+            <div
+              onPointerDown={(e) => e.stopPropagation()}
+              className={cn('absolute inset-0 grid place-items-center rounded-full transition-opacity', on || anySel ? 'opacity-100' : 'opacity-0 group-hover:opacity-100')}
+            >
+              <span className="grid h-full w-full place-items-center rounded-full bg-black/45 backdrop-blur-[1px]">
+                <Checkbox checked={on} onChange={() => sel.toggle(lead.id)} />
+              </span>
+            </div>
+          )}
+        </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[14px] font-semibold leading-tight">{lead.name}</p>
           {(lead.value ?? 0) > 0 && (
