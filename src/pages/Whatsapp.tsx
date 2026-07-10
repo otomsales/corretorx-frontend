@@ -18,13 +18,14 @@ import { WA_CONVERSATIONS, type WaConv, type WaMsg } from '@/lib/whatsapp-data'
 const wa = {
   panel: 'bg-white dark:bg-[#111b21]',
   header: 'bg-[#f0f2f5] dark:bg-[#202c33]',
-  hover: 'hover:bg-[#f5f6f6] dark:hover:bg-white/[0.035]',
+  field: 'bg-[#f0f2f5] dark:bg-[#2a3942]',
+  hover: 'hover:bg-[#f5f6f6] dark:hover:bg-[#202c33]',
   active: 'bg-[#f0f2f5] dark:bg-[#2a3942]',
   wall: 'bg-[#efeae2] dark:bg-[#0b141a]',
   bubbleIn: 'bg-white dark:bg-[#202c33]',
   bubbleOut: 'bg-[#d9fdd3] dark:bg-[#005c4b]',
   sub: 'text-[#667781] dark:text-[#8696a0]',
-  border: 'border-black/[0.08] dark:border-white/[0.06]',
+  border: 'border-black/[0.08] dark:border-[#222d34]',
 }
 const DOODLE = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.035' stroke-width='1.6'%3E%3Cpath d='M12 14h9M16.5 9.5v9'/%3E%3Ccircle cx='54' cy='22' r='6'/%3E%3Cpath d='M9 52c4-5 9-5 13 0'/%3E%3Cpath d='M48 54l7 7M55 54l-7 7'/%3E%3Cpath d='M34 34h10v10'/%3E%3C/g%3E%3C/svg%3E\")"
 
@@ -87,7 +88,7 @@ function ConversationList({ convs, selectedId, onSelect }: {
   return (
     <aside className={cn('flex w-[360px] shrink-0 flex-col border-r', wa.panel, wa.border)}>
       {/* header */}
-      <div className={cn('flex h-14 shrink-0 items-center justify-between px-4', wa.header)}>
+      <div className={cn('flex h-14 shrink-0 items-center justify-between px-4', wa.panel)}>
         <span className="text-[16px] font-bold tracking-tight">Conversas</span>
         <div className="flex items-center gap-1">
           <button title="Nova conversa" className={cn('grid h-9 w-9 place-items-center rounded-full', wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><MessageSquarePlus className="h-5 w-5" /></button>
@@ -106,7 +107,7 @@ function ConversationList({ convs, selectedId, onSelect }: {
       {/* chips */}
       <div className="flex shrink-0 gap-2 px-3 pb-2">
         {CHIPS.map((c) => (
-          <button key={c.key} onClick={() => setChip(c.key)} className={cn('rounded-full px-3 py-1 text-[12.5px] font-medium transition-colors', chip === c.key ? 'bg-teal/15 text-teal' : cn(wa.sub, 'bg-black/[0.04] dark:bg-white/[0.05] hover:bg-black/[0.07] dark:hover:bg-white/[0.08]'))}>
+          <button key={c.key} onClick={() => setChip(c.key)} className={cn('rounded-full px-3 py-1 text-[12.5px] font-medium transition-colors', chip === c.key ? 'bg-[#0b3d36] text-[#00a884] dark:bg-[#103629] dark:text-[#00d9a3]' : cn(wa.sub, 'bg-black/[0.04] dark:bg-white/[0.05] hover:bg-black/[0.07] dark:hover:bg-white/[0.08]'))}>
             {c.label}
           </button>
         ))}
@@ -123,7 +124,7 @@ function ConversationList({ convs, selectedId, onSelect }: {
               <div className="min-w-0 flex-1 border-b border-transparent">
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate text-[15px] font-semibold text-foreground">{c.name}</span>
-                  <span className={cn('shrink-0 text-[11px]', c.unread > 0 ? 'font-semibold text-teal' : wa.sub)}>{last?.t}</span>
+                  <span className={cn('shrink-0 text-[11px]', c.unread > 0 ? 'font-semibold text-[#00a884]' : wa.sub)}>{last?.t}</span>
                 </div>
                 <div className="mt-0.5 flex items-center justify-between gap-2">
                   <span className={cn('flex min-w-0 items-center gap-1 truncate text-[13px]', wa.sub)}>
@@ -134,7 +135,7 @@ function ConversationList({ convs, selectedId, onSelect }: {
                   <span className="flex shrink-0 items-center gap-1.5">
                     {c.muted && <BellOff className={cn('h-3.5 w-3.5', wa.sub)} />}
                     {c.pinned && <Pin className={cn('h-3.5 w-3.5', wa.sub)} />}
-                    {c.unread > 0 && <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-teal px-1 text-[10px] font-bold text-primary-foreground">{c.unread}</span>}
+                    {c.unread > 0 && <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#00a884] px-1 text-[10px] font-bold text-[#111b21]">{c.unread}</span>}
                   </span>
                 </div>
               </div>
@@ -196,7 +197,7 @@ function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
           <Avatar url={conv.avatarUrl} name={conv.name} size="h-10 w-10" />
           <div className="min-w-0">
             <p className="truncate text-[15px] font-semibold text-foreground">{conv.name}</p>
-            <p className={cn('truncate text-[12px]', conv.online ? 'text-teal' : wa.sub)}>{conv.online ? 'online' : `visto por último ${conv.lastSeen ?? ''}`}</p>
+            <p className={cn('truncate text-[12px]', conv.online ? 'text-[#00a884]' : wa.sub)}>{conv.online ? 'online' : `visto por último ${conv.lastSeen ?? ''}`}</p>
           </div>
         </button>
         {conv.leadId && (
@@ -242,10 +243,10 @@ function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
         <textarea
           value={draft} onChange={(e) => setDraft(e.target.value)} rows={1} placeholder="Digite uma mensagem"
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-          className={cn('max-h-32 min-h-[42px] flex-1 resize-none rounded-lg px-4 py-2.5 text-[14px] outline-none placeholder:text-[13.5px]', wa.panel, wa.sub, 'text-foreground')}
+          className={cn('max-h-32 min-h-[42px] flex-1 resize-none rounded-lg px-4 py-2.5 text-[14px] outline-none placeholder:text-[13.5px]', wa.field, wa.sub, 'text-foreground')}
         />
         {draft.trim()
-          ? <button onClick={send} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-teal text-primary-foreground transition hover:brightness-110"><SendHorizontal className="h-5 w-5" /></button>
+          ? <button onClick={send} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#00a884] text-[#111b21] transition hover:brightness-110"><SendHorizontal className="h-5 w-5" /></button>
           : <button className={cn('grid h-10 w-10 shrink-0 place-items-center rounded-full', wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Mic className="h-6 w-6" /></button>}
       </div>
     </section>
