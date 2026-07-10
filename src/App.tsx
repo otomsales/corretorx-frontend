@@ -4,7 +4,6 @@ import Signup from '@/pages/Signup'
 import Dashboard from '@/pages/Dashboard'
 import Funil from '@/pages/Funil'
 import Leads from '@/pages/Leads'
-import LeadDetail from '@/pages/LeadDetail'
 import Whatsapp from '@/pages/Whatsapp'
 import Placeholder from '@/pages/Placeholder'
 import { AppLayout } from '@/components/layout/AppLayout'
@@ -18,7 +17,6 @@ export default function App() {
         <Route index element={<Dashboard />} />
         <Route path="funil" element={<Funil />} />
         <Route path="leads" element={<Leads />} />
-        <Route path="leads/:id" element={<LeadDetail />} />
         <Route path="chat" element={<Whatsapp />} />
         <Route path="*" element={<Placeholder />} />
       </Route>

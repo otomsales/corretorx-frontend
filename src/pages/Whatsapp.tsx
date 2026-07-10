@@ -1,5 +1,4 @@
 import { useMemo, useRef, useState, useEffect, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
 import {
   Search, MoreVertical, MessageSquarePlus, Check, CheckCheck, Pin, BellOff, Smile, Paperclip,
   Mic, SendHorizontal, ArrowLeft, Phone, X, Sparkles, CalendarPlus, ArrowRightLeft,
@@ -262,8 +261,7 @@ function KV({ k, v, mono }: { k: string; v: ReactNode; mono?: boolean }) {
 }
 
 function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
-  const navigate = useNavigate()
-  const { getLead } = useLeads()
+  const { getLead, openDetail } = useLeads()
   const lead = getLead(conv.leadId)
 
   return (
@@ -338,7 +336,7 @@ function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
             </PanelSection>
 
             <div className="px-5 pb-6 pt-1">
-              <button onClick={() => navigate(`/app/leads/${lead.id}`)} className="w-full rounded-lg bg-teal py-2.5 text-[13px] font-bold text-primary-foreground transition hover:brightness-110">
+              <button onClick={() => openDetail(lead.id)} className="w-full rounded-lg bg-teal py-2.5 text-[13px] font-bold text-primary-foreground transition hover:brightness-110">
                 Ver lead completo
               </button>
             </div>

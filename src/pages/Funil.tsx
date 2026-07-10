@@ -19,6 +19,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { brl, pct, initials } from '@/lib/format'
 import { FUNIL_LEADS, OWNERS, LOSS_REASONS, type Lead } from '@/lib/funil-data'
+import { useLeads } from '@/store/leads'
 import { MultiFilterDropdown } from '@/components/ui/MultiFilterDropdown'
 import {
   useContextMenu, ContextMenu, SelectionToolbar, Checkbox,
@@ -269,6 +270,7 @@ export default function Funil() {
 
   // seleção múltipla + ações em massa + menu de contexto
   const navigate = useNavigate()
+  const { openDetail } = useLeads()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulk, setBulk] = useState<null | 'stage' | 'owner' | 'tag' | 'pipeline' | 'delete'>(null)
   const [target, setTarget] = useState<string[]>([])
@@ -290,7 +292,7 @@ export default function Funil() {
   const selectAll = () => setSelected(new Set(boardIds))
   const cardMenu = (lead: Lead): MenuItem[] => [
     { label: 'Conversar', icon: MessageCircle, onClick: () => navigate('/app/chat') },
-    { label: 'Ver detalhe', icon: Eye, onClick: () => navigate(`/app/leads/${lead.id}`) },
+    { label: 'Ver detalhe', icon: Eye, onClick: () => openDetail(lead.id) },
     { divider: true, label: '' },
     { label: 'Mudar etapa', icon: ArrowRightLeft, onClick: () => openBulk('stage', [lead.id]) },
     { label: 'Mudar funil', icon: GitBranch, onClick: () => openBulk('pipeline', [lead.id]) },

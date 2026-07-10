@@ -10,6 +10,10 @@ interface LeadsCtx {
   logContact: (id: string, followupInDays: number | null) => void
   addAttachments: (id: string, files: File[]) => void
   removeAttachment: (id: string, attId: string) => void
+  // detalhe como modal (aberto de qualquer tela)
+  detailId: string | null
+  openDetail: (id: string) => void
+  closeDetail: () => void
 }
 
 let attSeq = 0
@@ -39,7 +43,11 @@ export function LeadsProvider({ children }: { children: ReactNode }) {
   const removeAttachment = (id: string, attId: string) =>
     setLeads((prev) => prev.map((x) => (x.id === id ? { ...x, attachments: (x.attachments ?? []).filter((a) => a.id !== attId) } : x)))
 
-  return <Ctx.Provider value={{ leads, getLead, saveLead, removeLead, moveStage, logContact, addAttachments, removeAttachment }}>{children}</Ctx.Provider>
+  const [detailId, setDetailId] = useState<string | null>(null)
+  const openDetail = (id: string) => setDetailId(id)
+  const closeDetail = () => setDetailId(null)
+
+  return <Ctx.Provider value={{ leads, getLead, saveLead, removeLead, moveStage, logContact, addAttachments, removeAttachment, detailId, openDetail, closeDetail }}>{children}</Ctx.Provider>
 }
 
 export function useLeads() {

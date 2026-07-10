@@ -157,7 +157,7 @@ function RowAction({ icon: Icon, label, onClick, tone }: {
 /* ---------- página ---------- */
 export default function Leads() {
   const navigate = useNavigate()
-  const { leads, saveLead: storeSave, removeLead: storeRemove, moveStage: storeMove, logContact: storeLog } = useLeads()
+  const { leads, saveLead: storeSave, removeLead: storeRemove, moveStage: storeMove, logContact: storeLog, openDetail } = useLeads()
   const [q, setQ] = useState('')
   const [fTier, setFTier] = useState<string[]>([])
   const [fStatus, setFStatus] = useState<string[]>([])
@@ -257,7 +257,7 @@ export default function Leads() {
   // menu de botão direito por lead
   const rowMenu = (lead: Lead): MenuItem[] => [
     { label: 'Conversar', icon: MessageCircle, onClick: () => navigate('/app/chat') },
-    { label: 'Ver detalhe', icon: Eye, onClick: () => navigate(`/app/leads/${lead.id}`) },
+    { label: 'Ver detalhe', icon: Eye, onClick: () => openDetail(lead.id) },
     { label: 'Editar', icon: Pencil, onClick: () => setFormOpen({ lead }) },
     { divider: true, label: '' },
     { label: 'Registrar contato', icon: Activity, onClick: () => setLogLead(lead) },
@@ -374,7 +374,7 @@ export default function Leads() {
               ) : rows.map(({ lead, status }) => (
                 <tr
                   key={lead.id}
-                  onClick={() => navigate(`/app/leads/${lead.id}`)}
+                  onClick={() => openDetail(lead.id)}
                   onContextMenu={(e) => openMenu(e, rowMenu(lead))}
                   className={cn('group cursor-pointer transition-colors', selected.has(lead.id) ? 'bg-teal/[0.07]' : 'hover:bg-foreground/[0.025]')}
                 >
@@ -404,7 +404,7 @@ export default function Leads() {
                       <RowAction icon={ArrowRightLeft} label="Mover etapa" onClick={() => setMoveLead(lead)} />
                       <RowAction icon={Pencil} label="Editar" onClick={() => setFormOpen({ lead })} />
                       <RowAction icon={Trash2} label="Excluir" onClick={() => setDelLead(lead)} />
-                      <RowAction icon={Eye} label="Ver lead" onClick={() => navigate(`/app/leads/${lead.id}`)} />
+                      <RowAction icon={Eye} label="Ver lead" onClick={() => openDetail(lead.id)} />
                     </div>
                   </td>
                 </tr>

@@ -3,6 +3,7 @@ import { Toaster } from 'sonner'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { LeadsProvider } from '@/store/leads'
+import LeadDetail from '@/pages/LeadDetail'
 
 export function AppLayout() {
   return (
@@ -29,6 +30,7 @@ function appShell() {
         </main>
       </div>
 
+      <LeadDetail />
       <Toaster theme="dark" position="bottom-right" richColors closeButton />
     </div>
   )

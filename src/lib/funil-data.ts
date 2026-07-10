@@ -27,7 +27,30 @@ export interface Lead {
   lifecycle?: 'potencial' | 'ativo' | 'frio' | 'ganho' | 'perdido' // status do ciclo de vida (derivado se ausente)
   followupInDays?: number | null // próximo retorno em dias (<0 atrasado, 0 hoje, null sem retorno)
   attachments?: Attachment[] // arquivos anexados (fotos, PDFs, documentos)
+  // campos adicionais (espelham o chat-wave)
+  email?: string
+  cpfCnpj?: string
+  produtoSugerido?: string // melhor saída de mercado
+  valorEstimado?: number | null // proposta estimada (centavos)
+  proximaAcao?: string
+  disc?: 'dominante' | 'influente' | 'estavel' | 'analitico'
+  contexto?: string // contexto da negociação
+  utmSource?: string
+  utmCampaign?: string
+  lives?: { name: string; age: number; rel: string }[] // vidas/idades (beneficiários)
 }
+
+export const DISC_OPTS = [
+  { value: 'dominante', label: 'Dominante', cls: 'bg-rose-600 text-white' },
+  { value: 'influente', label: 'Influente', cls: 'bg-amber-500 text-amber-950' },
+  { value: 'estavel', label: 'Estável', cls: 'bg-emerald-600 text-white' },
+  { value: 'analitico', label: 'Analítico', cls: 'bg-sky-600 text-white' },
+] as const
+
+export const REL_OPTS = [
+  { value: 'titular', label: 'Titular' }, { value: 'conjuge', label: 'Cônjuge' }, { value: 'filho', label: 'Filho(a)' },
+  { value: 'pai_mae', label: 'Pai/Mãe' }, { value: 'irmao', label: 'Irmão(ã)' }, { value: 'outro', label: 'Outro' },
+]
 
 export interface Attachment {
   id: string
@@ -128,7 +151,7 @@ const pic = (n: number) => `https://i.pravatar.cc/100?img=${n}`
 
 // Enriquecimento: tier / cidade / SLA / entrada / CNPJ / etiquetas / foto WhatsApp
 const ENRICH: Record<string, Partial<Lead>> = {
-  l1: { tier: 'ouro', city: 'São Paulo, SP', tags: ['Retorno'], noContactHours: 3, slaMinutes: 6, entryDaysAgo: 0, cnpj: true, avatarUrl: pic(12), followupInDays: 0, attachments: [{ id: 'a1', name: 'RG_titular.jpg', size: 184320, type: 'image/jpeg', url: pic(12) }, { id: 'a2', name: 'Proposta_Amil.pdf', size: 512000, type: 'application/pdf', url: '#' }] },
+  l1: { tier: 'ouro', city: 'São Paulo, SP', tags: ['Retorno'], noContactHours: 3, slaMinutes: 6, entryDaysAgo: 0, cnpj: true, avatarUrl: pic(12), followupInDays: 0, attachments: [{ id: 'a1', name: 'RG_titular.jpg', size: 184320, type: 'image/jpeg', url: pic(12) }, { id: 'a2', name: 'Proposta_Amil.pdf', size: 512000, type: 'application/pdf', url: '#' }], email: 'contato@construtoraaurora.com.br', cpfCnpj: '12.345.678/0001-90', produtoSugerido: 'Amil PME Adesão 400', valorEstimado: 1846000, proximaAcao: 'Enviar proposta revisada com 12 vidas até sexta', disc: 'dominante', contexto: 'Cliente compara com a concorrência. Sensível a preço, mas valoriza rede credenciada em SP capital.', utmSource: 'meta', utmCampaign: 'pme-saude-sp', lives: [{ name: 'Carlos Aurora', age: 44, rel: 'titular' }, { name: 'Rita Aurora', age: 41, rel: 'conjuge' }, { name: 'Léo Aurora', age: 12, rel: 'filho' }] },
   l2: { tier: 'bronze', city: 'Guarulhos, SP', noContactHours: 52, slaMinutes: 42, entryDaysAgo: 1, avatarUrl: pic(45), followupInDays: -3 },
   l3: { tier: 'prata', city: 'Rio de Janeiro, RJ', tags: ['PME'], noContactHours: 12, slaMinutes: 18, entryDaysAgo: 1, cnpj: true, followupInDays: 2 },
   l4: { tier: 'bronze', city: 'Belo Horizonte, MG', noContactHours: 28, slaMinutes: 9, entryDaysAgo: 2, avatarUrl: pic(33), followupInDays: null },
