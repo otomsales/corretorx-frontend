@@ -171,6 +171,8 @@ function Bubble({ msg, tail }: { msg: WaMsg; tail: boolean }) {
 function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
   conv: WaConv; onSend: (t: string) => void; onBack: () => void; onTogglePanel: () => void; panelOpen: boolean
 }) {
+  const { moveStage } = useLeads()
+  const mark = (stage: 'ganho' | 'perdido') => { if (conv.leadId) { moveStage(conv.leadId, stage); toast.success(stage === 'ganho' ? `${conv.name} marcado como Ganho 🎉` : `${conv.name} marcado como Perdido`) } }
   const [draft, setDraft] = useState('')
   const endRef = useRef<HTMLDivElement>(null)
   useEffect(() => { endRef.current?.scrollIntoView({ block: 'end' }) }, [conv.id, conv.messages.length])
@@ -197,6 +199,12 @@ function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
             <p className={cn('truncate text-[12px]', conv.online ? 'text-teal' : wa.sub)}>{conv.online ? 'online' : `visto por último ${conv.lastSeen ?? ''}`}</p>
           </div>
         </button>
+        {conv.leadId && (
+          <div className="hidden shrink-0 items-center gap-1.5 md:flex">
+            <button onClick={() => mark('ganho')} title="Marcar venda ganha" className="rounded-md bg-emerald-600 px-2.5 py-1 text-[12px] font-semibold text-white transition hover:brightness-110">Ganho</button>
+            <button onClick={() => mark('perdido')} title="Marcar venda perdida" className="rounded-md bg-rose-600 px-2.5 py-1 text-[12px] font-semibold text-white transition hover:brightness-110">Perdido</button>
+          </div>
+        )}
         <div className="flex items-center gap-1">
           <button title="Ligar" className={cn('grid h-9 w-9 place-items-center rounded-full', wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Phone className="h-[18px] w-[18px]" /></button>
           <button title="Buscar" className={cn('grid h-9 w-9 place-items-center rounded-full', wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Search className="h-[18px] w-[18px]" /></button>
@@ -320,6 +328,7 @@ function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
 
             <div className={cn('mx-5 border-t', wa.border)} />
             <PanelSection icon={Wallet} title="Comercial">
+              <KV k="Origem" v={lead.source ?? '—'} />
               <KV k="Responsável" v={<OwnerTag id={lead.ownerId} />} />
               <div className="flex items-center justify-between gap-3 py-1">
                 <span className="text-[12.5px] text-muted-foreground">Próximo retorno</span>
