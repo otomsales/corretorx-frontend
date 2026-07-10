@@ -232,13 +232,10 @@ function SubItem({ item }: { item: Item }) {
         )
       }
     >
-      {({ isActive }) => (
-        <>
-          <span className={cn('absolute left-[15px] top-1/2 h-4 w-[2.5px] -translate-y-1/2 rounded-full bg-gradient-to-b from-[#2DD4BF] to-[#22D3EE] transition-opacity', isActive ? 'opacity-100' : 'opacity-0')} />
-          <span className="flex-1 truncate">{item.label}</span>
-          {item.avatars ? <AvatarStack urls={item.avatars} /> : item.badge ? <Badge n={item.badge} /> : null}
-        </>
-      )}
+      {/* elbow arredondado (linha da árvore → item) */}
+      <span aria-hidden className="pointer-events-none absolute left-[15px] top-0 h-1/2 w-[13px] rounded-bl-[9px] border-b border-l border-border/45" />
+      <span className="flex-1 truncate">{item.label}</span>
+      {item.avatars ? <AvatarStack urls={item.avatars} /> : item.badge ? <Badge n={item.badge} /> : null}
     </NavLink>
   )
 }
@@ -263,8 +260,8 @@ export function Sidebar() {
         <button className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" title="Recolher menu">
           <PanelLeftClose className="h-[18px] w-[18px]" strokeWidth={2} />
         </button>
-        {/* traço parcial — não vai até o fim */}
-        <div className="absolute bottom-0 left-4 h-px w-28 bg-border/60" />
+        {/* traço parcial centralizado */}
+        <div className="absolute bottom-0 left-1/2 h-px w-28 -translate-x-1/2 bg-border/60" />
       </div>
 
       {/* Saudação + usuário */}
@@ -286,12 +283,14 @@ export function Sidebar() {
         {GROUPS.map((g) => {
           const hasActive = g.items.some((i) => pathname === i.to || pathname.startsWith(i.to + '/'))
           return (
-            <div key={g.key} className="pt-4">
+            <div key={g.key} className="relative pt-4">
+              {/* destaque verde da categoria ativa (rail arredondado) */}
+              {hasActive && <span aria-hidden className="pointer-events-none absolute left-0 top-[18px] h-[26px] w-1.5 rounded-full bg-gradient-to-b from-emerald-400 to-teal-400 shadow-[0_0_12px_-1px_rgba(52,211,153,0.7)]" />}
               <button
                 onClick={() => toggle(g.key)}
                 className={cn(
                   'flex w-full items-center gap-2 rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.13em] transition-colors',
-                  hasActive ? 'text-foreground/85' : 'text-muted-foreground/55 hover:text-muted-foreground',
+                  hasActive ? 'bg-foreground/[0.045] text-foreground/85' : 'text-muted-foreground/55 hover:text-muted-foreground',
                 )}
               >
                 <g.icon className={cn('h-3.5 w-3.5 shrink-0', hasActive ? 'text-[hsl(var(--brand-soft-accent))]' : 'opacity-60')} />
@@ -300,7 +299,8 @@ export function Sidebar() {
               </button>
               {open[g.key] && (
                 <div className="relative mt-1 space-y-0.5">
-                  <span className="absolute bottom-1.5 left-[15px] top-1.5 w-px bg-border/45" />
+                  {/* rail vertical da árvore */}
+                  <span aria-hidden className="pointer-events-none absolute left-[15px] top-0 bottom-[18px] w-px bg-border/45" />
                   {g.items.map((it) => <SubItem key={it.to} item={it} />)}
                 </div>
               )}
