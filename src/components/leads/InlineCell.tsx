@@ -2,8 +2,13 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { OWNERS, STAGE_CATALOG, lifecycleOf, type Lead } from '@/lib/funil-data'
+import { OWNERS, PIPELINES, STAGE_CATALOG, lifecycleOf, type Lead } from '@/lib/funil-data'
+import { brl } from '@/lib/format'
 import { TIER, STATUS, TierPill, StageChip, StatusDot, OwnerTag, FollowupCell } from './LeadBadges'
+
+const centsToReais = (c?: number | null) => (c ? (c / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '')
+const reaisToCents = (v: string) => Math.round((parseFloat(v.replace(/\./g, '').replace(',', '.')) || 0) * 100)
+export const money = { toInput: centsToReais, toCents: reaisToCents, fmt: brl }
 
 const SHADOW =
   'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]'
@@ -151,5 +156,51 @@ export function FollowupInlineCell({ lead, onPick }: { lead: Lead; onPick: (days
       trigger={<FollowupCell days={lead.followupInDays} />}
       options={FOLLOW_OPTS}
     />
+  )
+}
+
+export function PipelineCell({ value, onPick }: { value?: string; onPick: (id: string) => void }) {
+  const cur = PIPELINES.find((p) => p.id === value)
+  return (
+    <InlinePick
+      value={value} onPick={onPick} width={180}
+      trigger={<span className="text-[13.5px] font-medium text-foreground">{cur?.name ?? '—'}</span>}
+      options={PIPELINES.map((p) => ({ value: p.id, label: p.name }))}
+    />
+  )
+}
+
+/** Edição inline de texto/número/moeda no lugar (sem portal) — p/ campos livres. */
+export function InlineText({ value, display, onCommit, type = 'text', placeholder = '—' }: {
+  value: string
+  display?: ReactNode
+  onCommit: (v: string) => void
+  type?: 'text' | 'number' | 'currency'
+  placeholder?: string
+}) {
+  const [editing, setEditing] = useState(false)
+  const [val, setVal] = useState(value)
+  const start = () => { setVal(value); setEditing(true) }
+  const commit = () => { setEditing(false); if (val !== value) onCommit(val) }
+  const numeric = type === 'currency' || type === 'number'
+  if (editing) {
+    return (
+      <input
+        autoFocus value={val}
+        inputMode={type === 'number' ? 'numeric' : type === 'currency' ? 'decimal' : undefined}
+        onChange={(e) => setVal(type === 'number' ? e.target.value.replace(/\D/g, '') : e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commit() } else if (e.key === 'Escape') setEditing(false) }}
+        className={cn('h-7 w-36 rounded-md border border-teal bg-background px-2 text-right text-[13px] outline-none focus:ring-[2.5px] focus:ring-teal/20', numeric && 'font-mono tabular-nums')}
+      />
+    )
+  }
+  return (
+    <button
+      onClick={start} title="Clique para editar"
+      className={cn('-mr-1 max-w-[180px] truncate rounded-md px-1.5 py-0.5 text-[13.5px] font-medium text-foreground transition-colors hover:bg-foreground/[0.06]', numeric && 'font-mono tabular-nums')}
+    >
+      {display ?? (value || <span className="text-muted-foreground/50">{placeholder}</span>)}
+    </button>
   )
 }

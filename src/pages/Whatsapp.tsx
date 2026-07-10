@@ -1,15 +1,16 @@
 import { useMemo, useRef, useState, useEffect, type ReactNode } from 'react'
 import {
   Search, MoreVertical, MessageSquarePlus, Check, CheckCheck, Pin, BellOff, Smile, Paperclip,
-  Mic, SendHorizontal, ArrowLeft, Phone, X, Sparkles, CalendarPlus, ArrowRightLeft,
+  Mic, SendHorizontal, ArrowLeft, Phone, X, Sparkles, CalendarPlus,
   FileText, Image as ImageIcon, AudioLines, Lock, Star, HeartPulse, Wallet,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { brl, formatPhone, initials, pickAvatar } from '@/lib/format'
-import { STAGE_CATALOG, lifecycleOf } from '@/lib/funil-data'
+import { STAGE_CATALOG, PIPELINES, lifecycleOf, type Lead } from '@/lib/funil-data'
 import { useLeads } from '@/store/leads'
-import { TierPill, StatusDot, FollowupCell, OwnerTag } from '@/components/leads/LeadBadges'
+import { TierPill, StatusDot } from '@/components/leads/LeadBadges'
+import { StageCell, OwnerCell, FollowupInlineCell, PipelineCell, InlineText, money } from '@/components/leads/InlineCell'
 import { TagChip } from '@/lib/tags'
 import { XiaSummary } from '@/components/leads/XiaSummary'
 import { WA_CONVERSATIONS, type WaConv, type WaMsg } from '@/lib/whatsapp-data'
@@ -265,18 +266,20 @@ function PanelSection({ icon: Icon, title, children }: { icon: typeof HeartPulse
     </section>
   )
 }
-function KV({ k, v, mono }: { k: string; v: ReactNode; mono?: boolean }) {
+/** linha editável: rótulo à esquerda, editor inline à direita */
+function ERow({ k, children }: { k: string; children: ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-3 py-1">
-      <span className="text-[12.5px] text-muted-foreground">{k}</span>
-      <span className={cn('truncate text-[13.5px] font-medium text-foreground', mono && 'font-mono tabular-nums')}>{v}</span>
+    <div className="flex min-h-[30px] items-center justify-between gap-3 py-0.5">
+      <span className="shrink-0 text-[12.5px] text-muted-foreground">{k}</span>
+      <div className="flex min-w-0 justify-end">{children}</div>
     </div>
   )
 }
 
 function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
-  const { getLead, openDetail } = useLeads()
+  const { getLead, openDetail, saveLead, moveStage } = useLeads()
   const lead = getLead(conv.leadId)
+  const patch = (p: Partial<Lead>) => { if (lead) saveLead({ ...lead, ...p }) }
 
   return (
     <aside className={cn('flex w-[340px] shrink-0 flex-col overflow-hidden border-l', wa.panel, wa.border)}>
@@ -305,10 +308,9 @@ function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
         </div>
 
         {/* ações rápidas */}
-        <div className="grid grid-cols-3 gap-2 px-5 py-3">
+        <div className="grid grid-cols-2 gap-2 px-5 py-3">
           {[
             { icon: CalendarPlus, label: 'Agendar', on: () => toast('Agendar retorno — em breve') },
-            { icon: ArrowRightLeft, label: 'Mover', on: () => toast('Mover etapa — em breve') },
             { icon: Star, label: 'Favoritar', on: () => toast('Favoritado') },
           ].map((a) => (
             <button key={a.label} onClick={a.on} className="flex flex-col items-center gap-1.5 rounded-xl border border-border/70 bg-card/40 py-2.5 text-[11.5px] font-medium text-muted-foreground transition-colors hover:border-teal/40 hover:text-foreground">
@@ -321,20 +323,19 @@ function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
           <>
             <div className={cn('mx-5 border-t', wa.border)} />
             <PanelSection icon={HeartPulse} title="Plano de saúde">
-              <KV k="Operadora" v={lead.operadora !== '—' ? lead.operadora : '—'} />
-              <KV k="Plano" v={lead.plano || '—'} />
-              <KV k="Vidas" v={lead.vidas} mono />
-              <KV k="Valor / mês" v={lead.value ? brl(lead.value) : '—'} mono />
+              <ERow k="Operadora"><InlineText value={lead.operadora !== '—' ? lead.operadora : ''} display={lead.operadora !== '—' ? lead.operadora : undefined} onCommit={(v) => patch({ operadora: v.trim() || '—' })} /></ERow>
+              <ERow k="Plano"><InlineText value={lead.plano} onCommit={(v) => patch({ plano: v.trim() })} /></ERow>
+              <ERow k="Vidas"><InlineText type="number" value={String(lead.vidas)} onCommit={(v) => patch({ vidas: Math.max(1, Number(v) || 1) })} /></ERow>
+              <ERow k="Valor / mês"><InlineText type="currency" value={money.toInput(lead.value)} display={lead.value ? brl(lead.value) : undefined} onCommit={(v) => patch({ value: money.toCents(v) })} /></ERow>
             </PanelSection>
 
             <div className={cn('mx-5 border-t', wa.border)} />
             <PanelSection icon={Wallet} title="Comercial">
-              <KV k="Origem" v={lead.source ?? '—'} />
-              <KV k="Responsável" v={<OwnerTag id={lead.ownerId} />} />
-              <div className="flex items-center justify-between gap-3 py-1">
-                <span className="text-[12.5px] text-muted-foreground">Próximo retorno</span>
-                <FollowupCell days={lead.followupInDays} />
-              </div>
+              <ERow k="Etapa"><StageCell lead={lead} onPick={(s) => { moveStage(lead.id, s); toast.success(`Etapa: ${STAGE_CATALOG[s]?.label ?? s}`) }} /></ERow>
+              <ERow k="Funil"><PipelineCell value={lead.pipelineId ?? 'p-comercial'} onPick={(id) => { patch({ pipelineId: id }); toast.success(`Funil: ${PIPELINES.find((p) => p.id === id)?.name ?? ''}`) }} /></ERow>
+              <ERow k="Origem"><InlineText value={lead.source ?? ''} onCommit={(v) => patch({ source: v.trim() || null })} /></ERow>
+              <ERow k="Responsável"><OwnerCell lead={lead} onPick={(id) => patch({ ownerId: id })} /></ERow>
+              <ERow k="Próximo retorno"><FollowupInlineCell lead={lead} onPick={(d) => patch({ followupInDays: d })} /></ERow>
               {lead.tags && lead.tags.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">{lead.tags.map((t) => <TagChip key={t} tag={t} />)}</div>
               )}
