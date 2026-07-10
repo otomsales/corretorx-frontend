@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils'
 import { formatPhone } from '@/lib/format'
 import { OWNERS, STAGE_CATALOG, PIPELINES, lifecycleOf, type Lead } from '@/lib/funil-data'
 import { useLeads } from '@/store/leads'
-import { TierPill, StatusDot, StageChip, FollowupCell, LeadAvatar, OwnerTag } from '@/components/leads/LeadBadges'
+import { LeadAvatar } from '@/components/leads/LeadBadges'
+import { TierCell, StageCell, StatusCell, OwnerCell, FollowupInlineCell } from '@/components/leads/InlineCell'
 import { LeadFormModal, LogContactModal, MoveStageModal, ConfirmDeleteModal } from '@/components/leads/LeadModals'
 import { MultiFilterDropdown } from '@/components/ui/MultiFilterDropdown'
 import {
@@ -206,6 +207,13 @@ export default function Leads() {
   const moveStage = (l: Lead, stage: string) => { storeMove(l.id, stage); setMoveLead(null); toast.success(`"${l.name}" → ${STAGE_CATALOG[stage]?.label ?? stage}`) }
   const logContact = (l: Lead, followupInDays: number | null) => { storeLog(l.id, followupInDays); setLogLead(null); toast.success('Contato registrado') }
 
+  // edição inline nas células (1 clique → popover → salva no store)
+  const inlineTier = (l: Lead, tier: NonNullable<Lead['tier']>) => { storeSave({ ...l, tier }); toast.success('Tier atualizado') }
+  const inlineStage = (l: Lead, stage: string) => { storeMove(l.id, stage); toast.success(`Etapa: ${STAGE_CATALOG[stage]?.label ?? stage}`) }
+  const inlineStatus = (l: Lead, lifecycle: NonNullable<Lead['lifecycle']>) => { storeSave({ ...l, lifecycle }); toast.success('Status atualizado') }
+  const inlineOwner = (l: Lead, ownerId: string) => { storeSave({ ...l, ownerId }); toast.success(`Responsável: ${ownerName(ownerId)}`) }
+  const inlineFollow = (l: Lead, followupInDays: number | null) => { storeSave({ ...l, followupInDays }); toast.success('Próximo retorno atualizado') }
+
   const rows = useMemo(() => {
     const term = q.trim().toLowerCase()
     const now = new Date()
@@ -371,7 +379,7 @@ export default function Leads() {
                     </div>
                   </td>
                 </tr>
-              ) : rows.map(({ lead, status }) => (
+              ) : rows.map(({ lead }) => (
                 <tr
                   key={lead.id}
                   onClick={() => openDetail(lead.id)}
@@ -391,12 +399,12 @@ export default function Leads() {
                     </div>
                   </td>
                   {vis('phone') && <td className="whitespace-nowrap px-2 py-2.5 font-mono text-[12.5px] text-muted-foreground">{lead.phone ? formatPhone(lead.phone) : '—'}</td>}
-                  {vis('tier') && <td className="px-2 py-2.5"><TierPill t={lead.tier} /></td>}
-                  {vis('stage') && <td className="px-2 py-2.5"><StageChip id={lead.stage} /></td>}
-                  {vis('status') && <td className="whitespace-nowrap px-2 py-2.5"><StatusDot s={status} /></td>}
-                  {vis('owner') && <td className="whitespace-nowrap px-2 py-2.5"><OwnerTag id={lead.ownerId} /></td>}
+                  {vis('tier') && <td className="px-2 py-2.5" onClick={(e) => e.stopPropagation()}><TierCell lead={lead} onPick={(t) => inlineTier(lead, t)} /></td>}
+                  {vis('stage') && <td className="px-2 py-2.5" onClick={(e) => e.stopPropagation()}><StageCell lead={lead} onPick={(s) => inlineStage(lead, s)} /></td>}
+                  {vis('status') && <td className="whitespace-nowrap px-2 py-2.5" onClick={(e) => e.stopPropagation()}><StatusCell lead={lead} onPick={(s) => inlineStatus(lead, s)} /></td>}
+                  {vis('owner') && <td className="whitespace-nowrap px-2 py-2.5" onClick={(e) => e.stopPropagation()}><OwnerCell lead={lead} onPick={(id) => inlineOwner(lead, id)} /></td>}
                   {vis('entrada') && <td className="whitespace-nowrap px-2 py-2.5 font-mono text-[12.5px] tabular-nums text-muted-foreground">{entryDate(lead.entryDaysAgo)}</td>}
-                  {vis('followup') && <td className="px-2 py-2.5"><FollowupCell days={lead.followupInDays} /></td>}
+                  {vis('followup') && <td className="px-2 py-2.5" onClick={(e) => e.stopPropagation()}><FollowupInlineCell lead={lead} onPick={(d) => inlineFollow(lead, d)} /></td>}
                   <td className="px-2 py-2.5">
                     <div className="flex items-center justify-end gap-0 opacity-70 transition-opacity group-hover:opacity-100">
                       <RowAction icon={MessageCircle} label="Conversar" tone="teal" onClick={() => navigate('/app/chat')} />
