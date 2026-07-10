@@ -11,6 +11,7 @@ import { OWNERS, STAGE_CATALOG, DISC_OPTS, REL_OPTS, lifecycleOf, type Lead } fr
 import { useLeads } from '@/store/leads'
 import { StatusDot, FollowupCell, LeadAvatar } from '@/components/leads/LeadBadges'
 import { TagChip } from '@/lib/tags'
+import { XiaSummary } from '@/components/leads/XiaSummary'
 
 const SHADOW = 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_16px_32px_-10px_rgba(0,0,0,0.55),0_44px_72px_-16px_rgba(0,0,0,0.7)]'
 const OPERADORA_OPTS = ['Amil', 'Bradesco Saúde', 'SulAmérica', 'Hapvida', 'Unimed', 'NotreDame'].map((o) => ({ value: o, label: o }))
@@ -342,10 +343,7 @@ export default function LeadDetail() {
           {/* coluna direita — IA / anotações / anexos / histórico */}
           <div className="space-y-8">
             <Section icon={Sparkles} title="Resumo X IA" accent>
-              <div className="border-l-2 border-teal/40 pl-4">
-                <p className="text-[15px] leading-relaxed text-muted-foreground">A X IA vai resumir aqui o histórico da conversa, a intenção do lead, as objeções e a próxima melhor ação recomendada.</p>
-                <span className="mt-2 inline-block text-[11px] font-semibold uppercase tracking-wide text-teal/80">Em breve</span>
-              </div>
+              <XiaSummary lead={cur} />
             </Section>
 
             <Section icon={FileText} title="Anotações">

@@ -11,6 +11,7 @@ import { STAGE_CATALOG, lifecycleOf } from '@/lib/funil-data'
 import { useLeads } from '@/store/leads'
 import { TierPill, StatusDot, FollowupCell, OwnerTag } from '@/components/leads/LeadBadges'
 import { TagChip } from '@/lib/tags'
+import { XiaSummary } from '@/components/leads/XiaSummary'
 import { WA_CONVERSATIONS, type WaConv, type WaMsg } from '@/lib/whatsapp-data'
 
 /* ---------- paleta WhatsApp (light + dark) ---------- */
@@ -330,9 +331,7 @@ function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
 
             <div className={cn('mx-5 border-t', wa.border)} />
             <PanelSection icon={Sparkles} title="Resumo X IA">
-              <div className="border-l-2 border-teal/40 pl-3 text-[13px] leading-relaxed text-muted-foreground">
-                A X IA vai resumir esta conversa e sugerir a próxima ação. <span className="font-semibold text-teal/80">Em breve.</span>
-              </div>
+              <XiaSummary lead={lead} />
             </PanelSection>
 
             <div className="px-5 pb-6 pt-1">
