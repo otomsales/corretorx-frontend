@@ -241,7 +241,7 @@ export default function LeadDetail() {
               <h1 className="truncate text-2xl font-bold tracking-tight">{cur.name}</h1>
               <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5 font-medium"><span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: stageColor }} />{stage?.label ?? '—'}</span>
-                <StatusDot s={status} />
+                {stage?.kind === 'open' && <StatusDot s={status} />}
                 <ChipEdit value={cur.tier} opts={TIERS.map((t) => ({ value: t, label: t[0].toUpperCase() + t.slice(1), cls: t === 'bronze' ? 'bg-amber-700 text-white' : t === 'prata' ? 'bg-slate-400 text-slate-950' : t === 'ouro' ? 'bg-yellow-500 text-yellow-950' : 'bg-sky-500 text-white' }))} placeholder="+ tier" onChange={(t) => edit({ tier: t })} />
                 <FollowupCell days={cur.followupInDays} />
                 {cur.cnpj && <span className="text-muted-foreground/80">PME · CNPJ</span>}

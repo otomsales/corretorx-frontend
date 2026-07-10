@@ -1,17 +1,17 @@
 import { cn } from '@/lib/utils'
 
-/** Cor estável por etiqueta (tint) — mesma identidade das tags do chat. */
+/** Cor estável por etiqueta (sólida, sem translúcido) — mesma identidade das tags do chat. */
 const TAG_TINTS = [
-  'bg-emerald-500/15 text-emerald-300',
-  'bg-sky-500/15 text-sky-300',
-  'bg-violet-500/15 text-violet-300',
-  'bg-amber-500/15 text-amber-300',
-  'bg-rose-500/15 text-rose-300',
-  'bg-cyan-500/15 text-cyan-300',
-  'bg-indigo-500/15 text-indigo-300',
-  'bg-fuchsia-500/15 text-fuchsia-300',
-  'bg-orange-500/15 text-orange-300',
-  'bg-teal-500/15 text-teal-300',
+  'bg-emerald-600 text-white',
+  'bg-sky-600 text-white',
+  'bg-violet-600 text-white',
+  'bg-amber-500 text-amber-950',
+  'bg-rose-600 text-white',
+  'bg-cyan-600 text-white',
+  'bg-indigo-600 text-white',
+  'bg-fuchsia-600 text-white',
+  'bg-orange-500 text-orange-950',
+  'bg-teal-600 text-white',
 ]
 
 export function tagTint(tag: string): string {

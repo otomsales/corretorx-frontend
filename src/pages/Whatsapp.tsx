@@ -297,7 +297,7 @@ function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: `hsl(var(${STAGE_COLOR[lead.stage] ?? '--muted-foreground'}))` }} />
                 {STAGE_CATALOG[lead.stage]?.label ?? '—'}
               </span>
-              <StatusDot s={lifecycleOf(lead)} />
+              {STAGE_CATALOG[lead.stage]?.kind === 'open' && <StatusDot s={lifecycleOf(lead)} />}
               <TierPill t={lead.tier} />
             </div>
           )}

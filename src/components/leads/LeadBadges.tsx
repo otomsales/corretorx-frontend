@@ -40,12 +40,12 @@ export function StageChip({ id }: { id: string }) {
 
 export function FollowupCell({ days }: { days: number | null | undefined }) {
   if (days == null) {
-    return <span className="inline-flex items-center gap-1 whitespace-nowrap text-[11px] text-muted-foreground/50"><AlertTriangle className="h-3 w-3 shrink-0" />Sem retorno</span>
+    return <span className="inline-flex items-center gap-1 whitespace-nowrap text-[12px] font-medium text-muted-foreground/60"><AlertTriangle className="h-3 w-3 shrink-0" />Sem retorno</span>
   }
-  let cls = 'bg-muted text-muted-foreground', label = `Em ${days}d`
-  if (days < 0) { cls = 'bg-danger/12 text-danger'; label = `Atrasado ${Math.abs(days)}d` }
-  else if (days === 0) { cls = 'bg-warning/15 text-warning'; label = 'Hoje' }
-  return <span className={cn('inline-flex items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-0.5 text-[11px] font-medium', cls)}><Clock className="h-3 w-3 shrink-0" />{label}</span>
+  let cls = 'text-muted-foreground', label = `Em ${days}d`
+  if (days < 0) { cls = 'text-danger'; label = `Atrasado ${Math.abs(days)}d` }
+  else if (days === 0) { cls = 'text-warning'; label = 'Hoje' }
+  return <span className={cn('inline-flex items-center gap-1 whitespace-nowrap text-[12px] font-semibold', cls)}><Clock className="h-3 w-3 shrink-0" />{label}</span>
 }
 
 /** Responsável = avatar pequeno + primeiro nome (ou completo). */
