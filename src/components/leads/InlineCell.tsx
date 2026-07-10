@@ -48,9 +48,9 @@ function InlinePick<T extends string>({
     <>
       <button
         ref={btnRef} onClick={open} title="Clique para editar"
-        className="group/ie -mx-1 inline-flex max-w-full items-center gap-1 rounded-md px-1 py-0.5 text-left align-middle transition-colors hover:bg-foreground/[0.06]"
+        className="group/ie -mx-1 inline-flex items-center gap-1 whitespace-nowrap rounded-md px-1 py-0.5 text-left align-middle transition-colors hover:bg-foreground/[0.06]"
       >
-        <span className="min-w-0 truncate">{trigger}</span>
+        {trigger}
         <ChevronDown className="h-3 w-3 shrink-0 text-transparent transition-colors group-hover/ie:text-muted-foreground/60" />
       </button>
       {pos != null && createPortal(
