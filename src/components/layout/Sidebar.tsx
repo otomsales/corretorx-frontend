@@ -286,8 +286,8 @@ export function Sidebar() {
           const hasActive = g.items.some((i) => pathname === i.to || pathname.startsWith(i.to + '/'))
           return (
             <div key={g.key} className="relative pt-4">
-              {/* destaque verde da categoria ativa (rail sólido, sem glow) */}
-              {hasActive && <span aria-hidden className="pointer-events-none absolute left-0 top-[17px] h-7 w-1 rounded-full bg-emerald-400" />}
+              {/* destaque verde da categoria ativa (meia-lua colada na borda) */}
+              {hasActive && <span aria-hidden className="pointer-events-none absolute -left-3 top-[17px] h-7 w-[7px] rounded-r-full bg-emerald-400" />}
               <button
                 onClick={() => toggle(g.key)}
                 className={cn(
