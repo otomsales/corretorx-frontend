@@ -225,17 +225,22 @@ function SubItem({ item }: { item: Item }) {
       to={item.to}
       className={({ isActive }) =>
         cn(
-          'group relative flex items-center gap-2 rounded-lg py-1.5 pl-9 pr-2 text-[14px] transition-colors',
-          isActive
-            ? 'bg-foreground/[0.06] font-semibold text-foreground'
-            : 'font-medium text-foreground/55 hover:bg-foreground/[0.04] hover:text-foreground',
+          'group relative flex items-center py-0.5 pl-[22px] pr-1 text-[14px] transition-colors',
+          isActive ? 'font-semibold text-foreground' : 'font-medium text-foreground/55 hover:text-foreground',
         )
       }
     >
-      {/* elbow arredondado (linha da árvore → item) */}
-      <span aria-hidden className="pointer-events-none absolute left-[15px] top-0 h-1/2 w-[13px] rounded-bl-[9px] border-b border-l border-border/45" />
-      <span className="flex-1 truncate">{item.label}</span>
-      {item.avatars ? <AvatarStack urls={item.avatars} /> : item.badge ? <Badge n={item.badge} /> : null}
+      {({ isActive }) => (
+        <>
+          {/* elbow arredondado (linha da árvore → item) */}
+          <span aria-hidden className="pointer-events-none absolute left-[15px] top-0 h-1/2 w-[13px] rounded-bl-[9px] border-b border-l border-border/45" />
+          {/* realce começa à direita do rail — não cruza a linha da escada */}
+          <span className={cn('flex flex-1 items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors', isActive ? 'bg-foreground/[0.06]' : 'group-hover:bg-foreground/[0.04]')}>
+            <span className="flex-1 truncate">{item.label}</span>
+            {item.avatars ? <AvatarStack urls={item.avatars} /> : item.badge ? <Badge n={item.badge} /> : null}
+          </span>
+        </>
+      )}
     </NavLink>
   )
 }

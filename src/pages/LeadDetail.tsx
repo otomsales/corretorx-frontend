@@ -2,14 +2,16 @@ import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   X, Phone, PhoneCall, MessageCircle, User, HeartPulse, Clock, History, FileText,
-  MapPin, Zap, GitBranch, UserPlus, ChevronDown, Check, Plus, Paperclip, Mail, Target, Users, Megaphone, type LucideIcon,
+  MapPin, Zap, GitBranch, UserPlus, ChevronDown, Check, Plus, Paperclip, Mail, Target, Users, Megaphone, SlidersHorizontal, type LucideIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { brl, formatPhone } from '@/lib/format'
 import { OWNERS, STAGE_CATALOG, DISC_OPTS, REL_OPTS, lifecycleOf, type Lead } from '@/lib/funil-data'
 import { useLeads } from '@/store/leads'
+import { useCustomFields } from '@/store/customFields'
 import { StatusDot, FollowupCell, LeadAvatar } from '@/components/leads/LeadBadges'
+import { CustomFieldInline, ManageFieldsModal } from '@/components/leads/CustomFields'
 import { TagChip } from '@/lib/tags'
 
 const SHADOW = 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_16px_32px_-10px_rgba(0,0,0,0.55),0_44px_72px_-16px_rgba(0,0,0,0.7)]'
@@ -192,8 +194,10 @@ function AddLife({ onAdd }: { onAdd: (l: { name: string; age: number; rel: strin
 export default function LeadDetail() {
   const navigate = useNavigate()
   const { detailId, closeDetail, getLead, saveLead } = useLeads()
+  const { fields: customFields } = useCustomFields()
   const lead = getLead(detailId ?? undefined)
   const [note, setNote] = useState('')
+  const [manageOpen, setManageOpen] = useState(false)
   const [draft, setDraft] = useState(lead)
   const [dirty, setDirty] = useState(false)
   const attSeq = useRef(0)
@@ -329,6 +333,20 @@ export default function LeadDetail() {
               </div>
             </Section>
 
+            <Section icon={SlidersHorizontal} title="Campos personalizados">
+              {customFields.length > 0 ? (
+                <div className="grid grid-cols-2 gap-x-4 gap-y-3.5">
+                  {customFields.map((f) => (
+                    <div key={f.id} className="min-w-0">
+                      <p className="text-[10px] font-medium uppercase tracking-[0.07em] text-muted-foreground/55">{f.label}</p>
+                      <div className="mt-1"><CustomFieldInline field={f} value={cur.custom?.[f.id]} onChange={(v) => edit({ custom: { ...(cur.custom ?? {}), [f.id]: v } })} /></div>
+                    </div>
+                  ))}
+                </div>
+              ) : <p className="text-[13px] text-muted-foreground/60">Nenhum campo personalizado ainda.</p>}
+              <button onClick={() => setManageOpen(true)} className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-medium text-teal transition hover:brightness-110"><SlidersHorizontal className="h-3.5 w-3.5" /> Gerenciar campos</button>
+            </Section>
+
             <Section icon={Clock} title="Retorno & SLA" accent>
               <div className="divide-y divide-border/40">
                 <Row label="Próximo retorno"><FollowupCell days={cur.followupInDays} /></Row>
@@ -375,6 +393,7 @@ export default function LeadDetail() {
           </div>
         </div>
       </div>
+      {manageOpen && <ManageFieldsModal onClose={() => setManageOpen(false)} />}
     </div>
   )
 }

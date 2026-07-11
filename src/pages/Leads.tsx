@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Search, ChevronDown, ChevronUp, ChevronsUpDown, Check, X, Plus, MessageCircle, Activity, ArrowRightLeft, Pencil, Trash2, Eye, Users, Columns3, Tag, GitBranch, UserRound,
+  Search, ChevronDown, ChevronUp, ChevronsUpDown, Check, X, Plus, MessageCircle, Activity, ArrowRightLeft, Pencil, Trash2, Eye, Users, Columns3, Tag, GitBranch, UserRound, SlidersHorizontal,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -10,6 +10,8 @@ import { OWNERS, STAGE_CATALOG, PIPELINES, lifecycleOf, type Lead } from '@/lib/
 import { useLeads } from '@/store/leads'
 import { LeadAvatar } from '@/components/leads/LeadBadges'
 import { TierCell, StageCell, StatusCell, OwnerCell, FollowupInlineCell } from '@/components/leads/InlineCell'
+import { useCustomFields } from '@/store/customFields'
+import { CustomFieldInline, ManageFieldsModal } from '@/components/leads/CustomFields'
 import { LeadFormModal, LogContactModal, MoveStageModal, ConfirmDeleteModal } from '@/components/leads/LeadModals'
 import { MultiFilterDropdown } from '@/components/ui/MultiFilterDropdown'
 import {
@@ -159,6 +161,9 @@ function RowAction({ icon: Icon, label, onClick, tone }: {
 export default function Leads() {
   const navigate = useNavigate()
   const { leads, saveLead: storeSave, removeLead: storeRemove, moveStage: storeMove, logContact: storeLog, openDetail } = useLeads()
+  const { fields: customFields } = useCustomFields()
+  const tableFields = customFields.filter((f) => f.showInTable)
+  const [manageOpen, setManageOpen] = useState(false)
   const [q, setQ] = useState('')
   const [fTier, setFTier] = useState<string[]>([])
   const [fStatus, setFStatus] = useState<string[]>([])
@@ -172,7 +177,7 @@ export default function Leads() {
   const [hidden, setHidden] = useState<Set<string>>(new Set())
   const toggleCol = (k: string) => setHidden((prev) => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n })
   const vis = (k: string) => !hidden.has(k)
-  const colCount = 3 + COLS.filter((c) => vis(c.key)).length // +checkbox +lead +ações
+  const colCount = 3 + COLS.filter((c) => vis(c.key)).length + tableFields.length // +checkbox +lead +ações +custom
 
   // modais CRUD / ações
   const [formOpen, setFormOpen] = useState<{ lead: Lead | null } | null>(null)
@@ -213,6 +218,7 @@ export default function Leads() {
   const inlineStatus = (l: Lead, lifecycle: NonNullable<Lead['lifecycle']>) => { storeSave({ ...l, lifecycle }); toast.success('Status atualizado') }
   const inlineOwner = (l: Lead, ownerId: string) => { storeSave({ ...l, ownerId }); toast.success(`Responsável: ${ownerName(ownerId)}`) }
   const inlineFollow = (l: Lead, followupInDays: number | null) => { storeSave({ ...l, followupInDays }); toast.success('Próximo retorno atualizado') }
+  const inlineCustom = (l: Lead, fieldId: string, v: string | boolean) => { storeSave({ ...l, custom: { ...(l.custom ?? {}), [fieldId]: v } }) }
 
   const rows = useMemo(() => {
     const term = q.trim().toLowerCase()
@@ -302,7 +308,7 @@ export default function Leads() {
       </div>
 
       {/* filtros */}
-      <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border bg-card p-1.5">
+      <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border/40 bg-card p-1.5">
         <div className="relative flex items-center">
           <Search className="pointer-events-none absolute left-2.5 h-4 w-4 text-muted-foreground" />
           <input
@@ -330,6 +336,9 @@ export default function Leads() {
         )}
         <div className="ml-auto flex items-center gap-1">
           <ColumnsMenu hidden={hidden} toggle={toggleCol} />
+          <button onClick={() => setManageOpen(true)} title="Campos personalizados" className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground">
+            <SlidersHorizontal className="h-3.5 w-3.5" /> Campos
+          </button>
           <span className="mx-1 h-5 w-px bg-border" />
           <span className="pr-2 text-[13px] tabular-nums text-muted-foreground">
             <span className="font-semibold text-foreground">{rows.length}</span> {rows.length === 1 ? 'lead' : 'leads'}
@@ -352,11 +361,11 @@ export default function Leads() {
       )}
 
       {/* tabela */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="overflow-hidden rounded-xl border border-border/40 bg-card">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] table-auto border-collapse text-left">
             <thead>
-              <tr className="border-b border-border bg-muted/25 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-border/40 bg-muted/25 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 <th className="w-9 px-2 py-3"><Checkbox checked={allSelected} indeterminate={selCount > 0 && !allSelected} onChange={() => (allSelected || selCount > 0 ? clearSel() : selectAll())} /></th>
                 {th('lead', 'Lead')}
                 {vis('phone') && th('phone', 'Telefone')}
@@ -366,10 +375,11 @@ export default function Leads() {
                 {vis('owner') && th('owner', 'Responsável')}
                 {vis('entrada') && th('entrada', 'Entrada')}
                 {vis('followup') && th('followup', 'Próx. retorno')}
+                {tableFields.map((f) => <th key={f.id} className="whitespace-nowrap px-2 py-3 font-semibold uppercase tracking-wide">{f.label}</th>)}
                 <th className="px-2 py-3 text-right font-semibold">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/40">
               {rows.length === 0 ? (
                 <tr>
                   <td colSpan={colCount} className="h-48 text-center">
@@ -405,6 +415,7 @@ export default function Leads() {
                   {vis('owner') && <td className="whitespace-nowrap px-2 py-2.5" onClick={(e) => e.stopPropagation()}><OwnerCell lead={lead} onPick={(id) => inlineOwner(lead, id)} /></td>}
                   {vis('entrada') && <td className="whitespace-nowrap px-2 py-2.5 font-mono text-[12.5px] tabular-nums text-muted-foreground">{entryDate(lead.entryDaysAgo)}</td>}
                   {vis('followup') && <td className="px-2 py-2.5" onClick={(e) => e.stopPropagation()}><FollowupInlineCell lead={lead} onPick={(d) => inlineFollow(lead, d)} /></td>}
+                  {tableFields.map((f) => <td key={f.id} className="px-2 py-2.5 text-[13px] text-foreground" onClick={(e) => e.stopPropagation()}><CustomFieldInline field={f} value={lead.custom?.[f.id]} onChange={(v) => inlineCustom(lead, f.id, v)} /></td>)}
                   <td className="px-2 py-2.5">
                     <div className="flex items-center justify-end gap-0 opacity-70 transition-opacity group-hover:opacity-100">
                       <RowAction icon={MessageCircle} label="Conversar" tone="teal" onClick={() => navigate('/app/chat')} />
@@ -435,6 +446,7 @@ export default function Leads() {
       {bulk === 'tag' && <AddTagModal subtitle={`${target.length} lead${target.length > 1 ? 's' : ''}`} suggestions={allTags} onApply={bulkTag} onClose={() => setBulk(null)} />}
       {bulk === 'delete' && <BulkDeleteModal count={target.length} onConfirm={bulkDelete} onClose={() => setBulk(null)} />}
       <ContextMenu menu={menu} onClose={closeMenu} />
+      {manageOpen && <ManageFieldsModal onClose={() => setManageOpen(false)} />}
     </div>
   )
 }

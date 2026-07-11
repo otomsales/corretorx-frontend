@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { Check, ChevronDown } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { OWNERS, PIPELINES, STAGE_CATALOG, lifecycleOf, type Lead } from '@/lib/funil-data'
 import { brl } from '@/lib/format'
@@ -53,10 +53,9 @@ function InlinePick<T extends string>({
     <>
       <button
         ref={btnRef} onClick={open} title="Clique para editar"
-        className="group/ie -mx-1 inline-flex items-center gap-1 whitespace-nowrap rounded-md px-1 py-0.5 text-left align-middle transition-colors hover:bg-foreground/[0.06]"
+        className="group/ie -mr-1 inline-flex items-center whitespace-nowrap rounded-md px-1.5 py-0.5 text-left align-middle transition-colors hover:bg-foreground/[0.06]"
       >
         {trigger}
-        <ChevronDown className="h-3 w-3 shrink-0 text-transparent transition-colors group-hover/ie:text-muted-foreground/60" />
       </button>
       {pos != null && createPortal(
         <>
@@ -170,12 +169,25 @@ export function PipelineCell({ value, onPick }: { value?: string; onPick: (id: s
   )
 }
 
+/** Seleção inline genérica (portal) — p/ campos personalizáveis. */
+export function InlineSelect({ value, options, onPick, placeholder = '—', width = 180 }: {
+  value?: string; options: string[]; onPick: (v: string) => void; placeholder?: string; width?: number
+}) {
+  return (
+    <InlinePick
+      value={value} onPick={onPick} width={width}
+      trigger={<span className={cn('text-[13.5px] font-medium', value ? 'text-foreground' : 'text-muted-foreground/50')}>{value || placeholder}</span>}
+      options={options.map((o) => ({ value: o, label: o }))}
+    />
+  )
+}
+
 /** Edição inline de texto/número/moeda no lugar (sem portal) — p/ campos livres. */
 export function InlineText({ value, display, onCommit, type = 'text', placeholder = '—' }: {
   value: string
   display?: ReactNode
   onCommit: (v: string) => void
-  type?: 'text' | 'number' | 'currency'
+  type?: 'text' | 'number' | 'currency' | 'date'
   placeholder?: string
 }) {
   const [editing, setEditing] = useState(false)
@@ -186,12 +198,12 @@ export function InlineText({ value, display, onCommit, type = 'text', placeholde
   if (editing) {
     return (
       <input
-        autoFocus value={val}
+        autoFocus value={val} type={type === 'date' ? 'date' : 'text'} style={type === 'date' ? { colorScheme: 'dark' } : undefined}
         inputMode={type === 'number' ? 'numeric' : type === 'currency' ? 'decimal' : undefined}
         onChange={(e) => setVal(type === 'number' ? e.target.value.replace(/\D/g, '') : e.target.value)}
         onBlur={commit}
         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commit() } else if (e.key === 'Escape') setEditing(false) }}
-        className={cn('h-7 w-36 rounded-md border border-teal bg-background px-2 text-right text-[13px] outline-none focus:ring-[2.5px] focus:ring-teal/20', numeric && 'font-mono tabular-nums')}
+        className={cn('h-7 w-36 rounded-md border border-teal bg-background px-2 text-right text-[13px] outline-none focus:ring-[2.5px] focus:ring-teal/20', numeric && 'font-mono tabular-nums', type === 'date' && 'text-left')}
       />
     )
   }

@@ -38,6 +38,7 @@ export interface Lead {
   utmSource?: string
   utmCampaign?: string
   lives?: { name: string; age: number; rel: string }[] // vidas/idades (beneficiários)
+  custom?: Record<string, string | boolean> // valores de campos personalizáveis (por fieldId)
 }
 
 export const DISC_OPTS = [

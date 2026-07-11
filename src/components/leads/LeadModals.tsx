@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { ChevronDown, Check, X, Plus, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { OWNERS, STAGE_CATALOG, type Lead } from '@/lib/funil-data'
+import { useCustomFields } from '@/store/customFields'
+import { CustomFieldFormInput } from './CustomFields'
 
 const SHADOW = 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]'
 const inputCls = 'h-10 w-full rounded-lg border border-input bg-background px-3 text-[13.5px] outline-none transition-colors placeholder:text-muted-foreground/45 focus:border-teal focus:ring-[2.5px] focus:ring-teal/20'
@@ -104,6 +106,8 @@ export function LeadFormModal({ initial, onClose, onSave }: {
   const [ownerId, setOwnerId] = useState(initial?.ownerId ?? '')
   const [stage, setStage] = useState(initial?.stage ?? 'novo')
   const [cnpj, setCnpj] = useState(initial?.cnpj ?? false)
+  const { fields: customFields } = useCustomFields()
+  const [custom, setCustom] = useState<Record<string, string | boolean>>(initial?.custom ?? {})
   const valid = name.trim().length >= 2
 
   const submit = () => {
@@ -118,6 +122,7 @@ export function LeadFormModal({ initial, onClose, onSave }: {
       name: name.trim(), phone: phone.replace(/\D/g, '') || null, city: city.trim() || undefined,
       operadora: operadora || '—', plano, vidas: Math.max(1, Number(vidas) || 1), value: reaisToCents(valor),
       tier: (tier || undefined) as Lead['tier'], source: source || null, ownerId: ownerId || null, stage, cnpj,
+      custom: Object.keys(custom).length ? custom : undefined,
     })
   }
 
@@ -157,6 +162,18 @@ export function LeadFormModal({ initial, onClose, onSave }: {
           </button>
           É PME (tem CNPJ)
         </label>
+        {customFields.length > 0 && (
+          <div className="border-t border-border/40 pt-3.5">
+            <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">Campos personalizados</p>
+            <div className="grid grid-cols-2 gap-3.5">
+              {customFields.map((f) => (
+                <div key={f.id} className={f.type === 'textarea' || f.type === 'boolean' ? 'col-span-2' : ''}>
+                  <CustomFieldFormInput field={f} value={custom[f.id]} onChange={(v) => setCustom((c) => ({ ...c, [f.id]: v }))} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </Shell>
   )

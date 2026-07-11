@@ -22,6 +22,7 @@ export interface WaConv {
   pinned?: boolean
   muted?: boolean
   favorite?: boolean
+  archived?: boolean
   aiOn?: boolean
   messages: WaMsg[]
 }
@@ -64,8 +65,8 @@ export const WA_CONVERSATIONS: WaConv[] = [
     online: false, lastSeen: 'hoje às 07:15', unread: 0, messages: [
       m('w4m1', false, 'Boa noite, é sobre o plano individual', '21:40', 'Ontem'),
       m('w4m2', true, 'Oi Marina! Claro, me conta um pouco: é só pra você?', '21:42', 'Ontem', 'read'),
-      m('w4m3', false, 'Isso, só pra mim mesmo', '07:10', 'Hoje'),
-      m('w4m4', true, 'Fechado. Te mando 3 opções de operadora em instantes 🔎', '07:14', 'Hoje', 'delivered'),
+      m('w4m3', false, 'Isso, só pra mim mesmo', '07:10', 'Ontem'),
+      m('w4m4', true, 'Fechado. Te mando 3 opções de operadora em instantes 🔎', '07:14', 'Ontem', 'delivered'),
     ],
   },
   {
@@ -78,21 +79,21 @@ export const WA_CONVERSATIONS: WaConv[] = [
   {
     id: 'w6', leadId: 'l7', name: 'Ana Beatriz Lima', phone: '5511922221111', avatarUrl: 'https://i.pravatar.cc/100?img=15',
     online: false, lastSeen: 'há 2 dias', unread: 0, muted: true, messages: [
-      m('w6m1', false, 'Obrigada pelo atendimento! 💚', '16:00', '08/07'),
+      m('w6m1', false, 'Obrigada pelo atendimento! 💚', '16:00', 'segunda-feira'),
       m('w6m2', true, 'Eu que agradeço, Ana! Qualquer coisa é só chamar 😉', '16:05', '08/07', 'read'),
     ],
   },
   {
     id: 'w7', leadId: 'l14', name: 'Metalúrgica Silva', phone: '5511933221100', avatarUrl: 'https://i.pravatar.cc/100?img=3',
     online: false, lastSeen: 'hoje às 06:50', unread: 0, pinned: true, messages: [
-      m('w7m1', false, 'Fechamos com vocês! Pode emitir 🎉', '06:45', 'Hoje'),
-      m('w7m2', true, 'Maravilha!! 🥳 Já inicio a implantação e te envio a lista de documentos', '06:48', 'Hoje', 'read'),
+      m('w7m1', false, 'Fechamos com vocês! Pode emitir 🎉', '06:45', 'terça-feira'),
+      m('w7m2', true, 'Maravilha!! 🥳 Já inicio a implantação e te envio a lista de documentos', '06:48', 'terça-feira', 'read'),
     ],
   },
   {
     id: 'w8', name: 'Lead Meta · João P.', phone: '5511977223344', online: false, unread: 0, messages: [
-      m('w8m1', false, 'Vi um anúncio de plano de saúde...', '11:30', 'Hoje'),
-      m('w8m2', true, 'Oi João! Bem-vindo 👋 Me conta: é plano individual, familiar ou pra empresa?', '11:31', 'Hoje', 'sent'),
+      m('w8m1', false, 'Vi um anúncio de plano de saúde...', '11:30', '02/07/2026'),
+      m('w8m2', true, 'Oi João! Bem-vindo 👋 Me conta: é plano individual, familiar ou pra empresa?', '11:31', '02/07/2026', 'sent'),
     ],
   },
 ]

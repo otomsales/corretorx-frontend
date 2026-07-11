@@ -424,7 +424,7 @@ export default function Funil() {
       </div>
 
       {/* Filtros — toolbar única */}
-      <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border bg-card p-1.5">
+      <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border/40 bg-card p-1.5">
         <div className="relative flex items-center">
           <Search className="pointer-events-none absolute left-2.5 h-4 w-4 text-muted-foreground" />
           <input
@@ -469,19 +469,19 @@ export default function Funil() {
             <MiniKpi label="Conversão" value={pct(metrics.conversion, 0)} icon={Target} />
             <MiniKpi label="Valor" value={brl(metrics.funnelTotal)} icon={Wallet} />
             <MiniKpi label="Ticket" value={brl(metrics.ticket)} icon={Ticket} />
-            <div className="relative flex items-center gap-3 overflow-hidden rounded-xl border border-border bg-card px-3.5 py-2.5">
-              <span className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-[#2DD4BF] to-[#22D3EE]" aria-hidden />
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-teal/15 text-teal">
+            <div className="relative flex items-center gap-3 overflow-hidden rounded-xl border border-border/40 bg-card px-3.5 py-2.5">
+              <span className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-emerald-400 to-emerald-500" aria-hidden />
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-emerald-400/15 text-emerald-400">
                 <TrendingUp className="h-[18px] w-[18px]" />
               </span>
               <div className="min-w-0">
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Previsão ponderada</div>
-                <div className="mt-0.5 truncate font-mono text-[17px] font-bold leading-none tabular-nums text-teal">{brl(metrics.forecast)}</div>
+                <div className="mt-0.5 truncate font-mono text-[17px] font-bold leading-none tabular-nums text-emerald-400">{brl(metrics.forecast)}</div>
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-border bg-card px-3 py-2.5">
+          <div className="rounded-xl border border-border/40 bg-card px-3 py-2.5">
             <div className="mb-1.5 flex items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground">Funil de conversão</span>
               <span className="text-xs text-muted-foreground">
@@ -637,7 +637,7 @@ function FilterDropdown({ value, onChange, options, allLabel }: {
 
 function MiniKpi({ label, value, icon: Icon }: { label: string; value: string; icon: LucideIcon }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-3.5 py-2.5">
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-card px-3.5 py-2.5">
       <span className="flex items-center gap-2 truncate text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
         <Icon className="h-4 w-4 shrink-0 text-muted-foreground/60" />
         {label}
@@ -658,7 +658,7 @@ function StageColumn({ stage, leads, draggingId, stageColor, move }: {
   const someOn = stageOn > 0
   const anySel = (sel?.selected.size ?? 0) > 0
   return (
-    <section className="group/col flex w-[300px] min-w-[288px] shrink-0 flex-col rounded-2xl border border-border bg-muted/25">
+    <section className="group/col flex w-[300px] min-w-[288px] shrink-0 flex-col rounded-xl border border-border/40 bg-muted/25">
       <header className="relative shrink-0 px-3 pt-3.5">
         {sel && ids.length > 0 && (
           <div className={cn('absolute left-3 top-3 transition-opacity', someOn || anySel ? 'opacity-100' : 'opacity-0 group-hover/col:opacity-100')} title="Selecionar etapa">
@@ -840,7 +840,7 @@ function LeadCardBody({ lead, stageColor, overlay = false, interactive = false, 
     <article
       onContextMenu={interactive && sel ? (e) => sel.onCtx(e, lead) : undefined}
       className={cn(
-        'group relative flex min-h-[172px] flex-col overflow-hidden rounded-xl border p-3.5 pl-4 transition',
+        'group relative flex min-h-[172px] flex-col overflow-hidden rounded-[9px] border p-3.5 pl-4 transition',
         'border-black/[0.07] dark:border-white/[0.05]',
         on && 'ring-2 ring-teal',
         overlay

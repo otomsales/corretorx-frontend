@@ -13,10 +13,10 @@ function analyze(lead: Lead) {
   if (lead.value && lead.value >= 1500000) score += 6
   score = Math.max(8, Math.min(97, Math.round(score)))
   const temp = score >= 70
-    ? { label: 'Quente', cls: 'bg-rose-500/15 text-rose-400', icon: Flame }
+    ? { label: 'Quente', cls: 'bg-rose-600 text-white', icon: Flame }
     : score >= 50
-      ? { label: 'Morno', cls: 'bg-amber-500/15 text-amber-400', icon: TrendingUp }
-      : { label: 'Frio', cls: 'bg-sky-500/15 text-sky-400', icon: Snowflake }
+      ? { label: 'Morno', cls: 'bg-amber-500 text-amber-950', icon: TrendingUp }
+      : { label: 'Frio', cls: 'bg-sky-600 text-white', icon: Snowflake }
 
   const ctx = (lead.contexto ?? '').toLowerCase()
   const objs: string[] = []

@@ -3,11 +3,17 @@ import { Toaster } from 'sonner'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { LeadsProvider } from '@/store/leads'
+import { CustomFieldsProvider } from '@/store/customFields'
+import { TagColorsProvider } from '@/lib/tags'
 import LeadDetail from '@/pages/LeadDetail'
 
 export function AppLayout() {
   return (
-    <LeadsProvider>{appShell()}</LeadsProvider>
+    <TagColorsProvider>
+      <CustomFieldsProvider>
+        <LeadsProvider>{appShell()}</LeadsProvider>
+      </CustomFieldsProvider>
+    </TagColorsProvider>
   )
 }
 
