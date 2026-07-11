@@ -5,7 +5,7 @@ import {
   FileText, Image as ImageIcon, AudioLines, Lock, Star, HeartPulse, Wallet, ChevronDown, SlidersHorizontal, GripVertical,
   Archive, Trash2, Copy, Reply, Forward, Info, ListChecks, Filter, Smartphone,
 } from 'lucide-react'
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent, type DraggableAttributes } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { toast } from 'sonner'
@@ -503,7 +503,7 @@ function PanelSection({ icon: Icon, title, children, defaultOpen = true, handle 
 
 type SectionKey = 'plano' | 'comercial' | 'custom' | 'xia'
 
-function SortableSection({ id, children }: { id: SectionKey; children: (hp: { attributes: Record<string, unknown>; listeners: Record<string, unknown> | undefined }) => ReactNode }) {
+function SortableSection({ id, children }: { id: SectionKey; children: (hp: { attributes: DraggableAttributes; listeners: ReturnType<typeof useSortable>['listeners'] }) => ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={cn('border-t border-border/40', isDragging && 'relative z-10 bg-card opacity-80')}>
@@ -535,7 +535,7 @@ function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
   const lead = getLead(conv.leadId)
   const patch = (p: Partial<Lead>) => { if (lead) saveLead({ ...lead, ...p }) }
 
-  const renderSection = (k: SectionKey, hp: { attributes: Record<string, unknown>; listeners: Record<string, unknown> | undefined }) => {
+  const renderSection = (k: SectionKey, hp: { attributes: DraggableAttributes; listeners: ReturnType<typeof useSortable>['listeners'] }) => {
     if (!lead) return null
     const grip = <button {...hp.attributes} {...hp.listeners} className="grid h-5 w-5 shrink-0 cursor-grab touch-none place-items-center rounded text-muted-foreground/25 transition-colors hover:text-muted-foreground active:cursor-grabbing" title="Arrastar para reordenar"><GripVertical className="h-3.5 w-3.5" /></button>
     switch (k) {
