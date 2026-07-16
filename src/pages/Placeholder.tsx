@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom'
-import { Hammer } from 'lucide-react'
+import { Hammer } from '@phosphor-icons/react'
 
 export default function Placeholder() {
   const { pathname } = useLocation()

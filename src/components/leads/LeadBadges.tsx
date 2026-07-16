@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Clock, AlertTriangle } from 'lucide-react'
+import { Clock, Warning } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { initials, pickAvatar } from '@/lib/format'
 import { STAGE_CATALOG, OWNERS, type Lead } from '@/lib/funil-data'
@@ -14,7 +14,7 @@ export const TIER: Record<NonNullable<Lead['tier']>, { label: string; cls: strin
 export function TierPill({ t }: { t: Lead['tier'] }) {
   if (!t) return <span className="text-muted-foreground/50">—</span>
   const m = TIER[t]
-  return <span className={cn('inline-block rounded-md px-1.5 py-0.5 text-[10px] font-bold', m.cls)}>{m.label}</span>
+  return <span className={cn('inline-block rounded px-1.5 py-0.5 text-[10px] font-bold', m.cls)}>{m.label}</span>
 }
 
 /* Status = ponto colorido + texto neutro. */
@@ -40,7 +40,7 @@ export function StageChip({ id }: { id: string }) {
 
 export function FollowupCell({ days }: { days: number | null | undefined }) {
   if (days == null) {
-    return <span className="inline-flex items-center gap-1 whitespace-nowrap text-[12px] font-medium text-muted-foreground/60"><AlertTriangle className="h-3 w-3 shrink-0" />Sem retorno</span>
+    return <span className="inline-flex items-center gap-1 whitespace-nowrap text-[12px] font-medium text-muted-foreground/60"><Warning className="h-3 w-3 shrink-0" />Sem retorno</span>
   }
   let cls = 'text-muted-foreground', label = `Em ${days}d`
   if (days < 0) { cls = 'text-danger'; label = `Atrasado ${Math.abs(days)}d` }

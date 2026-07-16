@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Search, Bell, Moon, Sun } from 'lucide-react'
+import { MagnifyingGlass, Bell, Moon, Sun } from '@phosphor-icons/react'
 
 const TITLES: Record<string, string> = {
   '/app': 'Visão Geral',
   '/app/funil': 'Funil',
   '/app/leads': 'Leads',
+  '/app/distribuicao': 'Distribuição de leads',
   '/app/chat': 'WhatsApp',
   '/app/chat-interno': 'Chat interno',
   '/app/agenda': 'Agendamentos',
@@ -39,7 +40,7 @@ export function Topbar() {
 
       <div className="flex items-center gap-2">
         <div className="relative hidden md:block">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <MagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             placeholder="Buscar cliente, lead, contrato…"
             className="h-9 w-56 rounded-lg border border-input bg-muted/40 pl-9 pr-3 text-sm outline-none transition-all placeholder:text-muted-foreground/60 focus:border-teal focus:ring-[3px] focus:ring-teal/20"

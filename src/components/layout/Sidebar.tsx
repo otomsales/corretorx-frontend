@@ -2,16 +2,17 @@ import { useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, Briefcase, Workflow, ShieldCheck, Wallet, Settings,
-  ChevronDown, ChevronLeft, MessagesSquare, Maximize2, X, Paperclip, Mic, PanelLeftClose, type LucideIcon,
-} from 'lucide-react'
+  SquaresFour, Briefcase, FlowArrow, ShieldCheck, Wallet, GearSix,
+  CaretDown, CaretLeft, ChatsCircle, ArrowsOut, X, Paperclip, Microphone, SidebarSimple, WhatsappLogo, type Icon,
+} from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 
 type Item = { to: string; label: string; badge?: number; avatars?: string[] }
-type Group = { key: string; label: string; icon: LucideIcon; items: Item[] }
+type Group = { key: string; label: string; icon: Icon; items: Item[] }
 
 const pic = (n: number) => `https://i.pravatar.cc/60?img=${n}`
-const HOME = { to: '/app', label: 'Visão Geral', icon: LayoutDashboard }
+const HOME = { to: '/app', label: 'Visão Geral', icon: SquaresFour }
+const WHATSAPP = { to: '/app/chat', label: 'WhatsApp', icon: WhatsappLogo, badge: 7 }
 const TEAM_AVATARS = [pic(5), pic(15), pic(33)]
 
 const THREAD = [
@@ -33,12 +34,12 @@ const GROUPS: Group[] = [
     key: 'comercial', label: 'Comercial', icon: Briefcase, items: [
       { to: '/app/funil', label: 'Funil' },
       { to: '/app/leads', label: 'Leads' },
-      { to: '/app/chat', label: 'WhatsApp', badge: 7 },
+      { to: '/app/distribuicao', label: 'Distribuição' },
       { to: '/app/agenda', label: 'Agendamentos' },
     ],
   },
   {
-    key: 'operacional', label: 'Operacional', icon: Workflow, items: [
+    key: 'operacional', label: 'Operacional', icon: FlowArrow, items: [
       { to: '/app/implantacao', label: 'Implantação' },
       { to: '/app/pos-venda', label: 'Pós-venda' },
     ],
@@ -56,7 +57,7 @@ const GROUPS: Group[] = [
     ],
   },
   {
-    key: 'config', label: 'Configurações', icon: Settings, items: [
+    key: 'config', label: 'Configurações', icon: GearSix, items: [
       { to: '/app/relatorios', label: 'Relatórios' },
       { to: '/app/automacoes', label: 'Automações' },
       { to: '/app/admin', label: 'Admin' },
@@ -84,7 +85,7 @@ function AvatarStack({ urls, active }: { urls: string[]; active?: boolean }) {
 }
 
 /** Item de topo (com ícone). Ativo = pill preenchido. */
-function TopItem({ item, end }: { item: Item & { icon: LucideIcon }; end?: boolean }) {
+function TopItem({ item, end }: { item: Item & { icon: Icon }; end?: boolean }) {
   const Icon = item.icon
   return (
     <NavLink
@@ -127,7 +128,7 @@ function ChatInternoCard({ pos, onEnter, onLeave, onClose }: {
         <>
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <span className="text-[14px] font-bold tracking-tight">Mensagens</span>
-            <button onClick={openFull} title="Abrir chat interno" className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-teal"><Maximize2 className="h-4 w-4" /></button>
+            <button onClick={openFull} title="Abrir chat interno" className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-teal"><ArrowsOut className="h-4 w-4" /></button>
           </div>
           <div className="flex-1 overflow-y-auto p-1.5">
             {CONTACTS.map((c) => (
@@ -153,7 +154,7 @@ function ChatInternoCard({ pos, onEnter, onLeave, onClose }: {
       ) : (
         <>
           <div className="flex items-center gap-2.5 border-b border-border px-3.5 py-3">
-            <button onClick={() => setActive(null)} className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><ChevronLeft className="h-4 w-4" /></button>
+            <button onClick={() => setActive(null)} className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><CaretLeft className="h-4 w-4" /></button>
             <span className="relative shrink-0">
               <img src={active.avatar} alt="" className="h-8 w-8 rounded-full object-cover" />
               <span className={cn('absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-card', active.online ? 'bg-emerald-400' : 'bg-muted-foreground/50')} />
@@ -162,7 +163,7 @@ function ChatInternoCard({ pos, onEnter, onLeave, onClose }: {
               <p className="truncate text-[13.5px] font-bold">{active.name}</p>
               <p className="text-[11px] text-muted-foreground">{active.online ? 'Online' : 'Offline'}</p>
             </div>
-            <button onClick={openFull} title="Expandir" className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"><Maximize2 className="h-3.5 w-3.5" /></button>
+            <button onClick={openFull} title="Expandir" className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"><ArrowsOut className="h-3.5 w-3.5" /></button>
             <button onClick={onClose} title="Fechar" className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
           </div>
           <div className="flex-1 space-y-3 overflow-y-auto px-3.5 py-3">
@@ -176,7 +177,7 @@ function ChatInternoCard({ pos, onEnter, onLeave, onClose }: {
           <div className="flex items-center gap-2 border-t border-border px-3 py-2.5">
             <button className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><Paperclip className="h-4 w-4" /></button>
             <input placeholder="Escreva uma mensagem…" className="h-9 min-w-0 flex-1 rounded-lg bg-muted/40 px-3 text-[13px] outline-none placeholder:text-muted-foreground/60 focus:ring-1 focus:ring-teal/40" />
-            <button className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-teal"><Mic className="h-4 w-4" /></button>
+            <button className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-teal"><Microphone className="h-4 w-4" /></button>
           </div>
         </>
       )}
@@ -207,7 +208,7 @@ function ChatInternoItem() {
       >
         {({ isActive }) => (
           <>
-            <MessagesSquare className={cn('h-[18px] w-[18px] shrink-0', isActive || open ? 'text-[hsl(var(--brand-soft-accent))]' : 'text-muted-foreground/70')} />
+            <ChatsCircle className={cn('h-[18px] w-[18px] shrink-0', isActive || open ? 'text-[hsl(var(--brand-soft-accent))]' : 'text-muted-foreground/70')} />
             <span className="flex-1 truncate">Chat interno</span>
             <AvatarStack urls={TEAM_AVATARS} active={open} />
           </>
@@ -263,7 +264,7 @@ export function Sidebar() {
           <span className="mt-1 block text-[9.5px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Corretora Aurora</span>
         </div>
         <button className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" title="Recolher menu">
-          <PanelLeftClose className="h-[18px] w-[18px]" strokeWidth={2} />
+          <SidebarSimple className="h-[18px] w-[18px]" />
         </button>
         {/* traço parcial centralizado */}
         <div className="absolute bottom-0 left-1/2 h-px w-28 -translate-x-1/2 bg-border/60" />
@@ -286,6 +287,7 @@ export function Sidebar() {
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3">
         <TopItem item={HOME} end />
         <ChatInternoItem />
+        <TopItem item={WHATSAPP} />
 
         {GROUPS.map((g) => {
           const hasActive = g.items.some((i) => pathname === i.to || pathname.startsWith(i.to + '/'))
@@ -302,7 +304,7 @@ export function Sidebar() {
               >
                 <g.icon className={cn('h-3.5 w-3.5 shrink-0', hasActive ? 'text-[hsl(var(--brand-soft-accent))]' : 'opacity-60')} />
                 <span className="flex-1 text-left">{g.label}</span>
-                <ChevronDown className={cn('h-3 w-3 shrink-0 opacity-45 transition-transform', open[g.key] && 'rotate-180')} />
+                <CaretDown className={cn('h-3 w-3 shrink-0 opacity-45 transition-transform', open[g.key] && 'rotate-180')} />
               </button>
               {open[g.key] && (
                 <div className="relative mt-1 space-y-0.5">

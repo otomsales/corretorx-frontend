@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Eye, EyeOff, Loader2, Check } from 'lucide-react'
+import { Eye, EyeSlash, CircleNotch, Check } from '@phosphor-icons/react'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { cn } from '@/lib/utils'
 
@@ -68,7 +68,7 @@ export default function Signup() {
                 aria-label={showPw ? 'Ocultar senha' : 'Mostrar senha'}
                 className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground/60 hover:text-muted-foreground"
               >
-                {showPw ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+                {showPw ? <EyeSlash className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
               </button>
             </div>
           </div>
@@ -82,7 +82,7 @@ export default function Signup() {
                 accept ? 'border-transparent bg-gradient-to-br from-[#2DD4BF] to-[#22D3EE]' : 'border-input',
               )}
             >
-              {accept && <Check className="h-3 w-3 text-[#04231F]" strokeWidth={3.5} />}
+              {accept && <Check className="h-3 w-3 text-[#04231F]" />}
             </button>
             <span>
               Li e aceito os <a href="#" onClick={(e) => e.preventDefault()} className="font-semibold text-teal hover:underline">Termos de Uso</a> e a{' '}
@@ -97,7 +97,7 @@ export default function Signup() {
               (loading || !accept) && 'cursor-not-allowed opacity-60',
             )}
           >
-            {loading ? <><Loader2 className="h-[18px] w-[18px] animate-spin" /> Criando conta…</> : 'Criar conta grátis'}
+            {loading ? <><CircleNotch className="h-[18px] w-[18px] animate-spin" /> Criando conta…</> : 'Criar conta grátis'}
           </button>
         </form>
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Trash2, ChevronUp, ChevronDown, X, SlidersHorizontal } from 'lucide-react'
+import { Plus, Trash, CaretUp, CaretDown, X, SlidersHorizontal } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { brl } from '@/lib/format'
@@ -109,8 +109,8 @@ export function ManageFieldsModal({ onClose }: { onClose: () => void }) {
             {fields.map((f, i) => (
               <div key={f.id} className="flex items-center gap-2 rounded-lg border border-border/40 bg-background/40 px-2.5 py-2">
                 <div className="flex flex-col">
-                  <button disabled={i === 0} onClick={() => move(f.id, -1)} className="text-muted-foreground/50 transition-colors hover:text-foreground disabled:opacity-20"><ChevronUp className="h-3.5 w-3.5" /></button>
-                  <button disabled={i === fields.length - 1} onClick={() => move(f.id, 1)} className="text-muted-foreground/50 transition-colors hover:text-foreground disabled:opacity-20"><ChevronDown className="h-3.5 w-3.5" /></button>
+                  <button disabled={i === 0} onClick={() => move(f.id, -1)} className="text-muted-foreground/50 transition-colors hover:text-foreground disabled:opacity-20"><CaretUp className="h-3.5 w-3.5" /></button>
+                  <button disabled={i === fields.length - 1} onClick={() => move(f.id, 1)} className="text-muted-foreground/50 transition-colors hover:text-foreground disabled:opacity-20"><CaretDown className="h-3.5 w-3.5" /></button>
                 </div>
                 <div className="min-w-0 flex-1">
                   <input value={f.label} onChange={(e) => updateField(f.id, { label: e.target.value })} className="w-full truncate rounded bg-transparent text-[13.5px] font-medium text-foreground outline-none focus:bg-foreground/[0.05] focus:px-1" />
@@ -119,7 +119,7 @@ export function ManageFieldsModal({ onClose }: { onClose: () => void }) {
                 <label className="flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground" title="Mostrar como coluna na tabela de Leads">
                   <input type="checkbox" checked={!!f.showInTable} onChange={(e) => updateField(f.id, { showInTable: e.target.checked })} className="h-3.5 w-3.5 accent-teal" /> coluna
                 </label>
-                <button onClick={() => removeField(f.id)} className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger"><Trash2 className="h-3.5 w-3.5" /></button>
+                <button onClick={() => removeField(f.id)} className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger"><Trash className="h-3.5 w-3.5" /></button>
               </div>
             ))}
             {fields.length === 0 && <p className="py-6 text-center text-[13px] text-muted-foreground">Nenhum campo ainda.</p>}

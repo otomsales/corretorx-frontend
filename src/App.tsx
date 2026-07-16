@@ -5,6 +5,8 @@ import Dashboard from '@/pages/Dashboard'
 import Funil from '@/pages/Funil'
 import Leads from '@/pages/Leads'
 import Whatsapp from '@/pages/Whatsapp'
+import Distribuicao from '@/pages/Distribuicao'
+import Agenda from '@/pages/Agenda'
 import Placeholder from '@/pages/Placeholder'
 import { AppLayout } from '@/components/layout/AppLayout'
 
@@ -18,6 +20,8 @@ export default function App() {
         <Route path="funil" element={<Funil />} />
         <Route path="leads" element={<Leads />} />
         <Route path="chat" element={<Whatsapp />} />
+        <Route path="distribuicao" element={<Distribuicao />} />
+        <Route path="agenda" element={<Agenda />} />
         <Route path="*" element={<Placeholder />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

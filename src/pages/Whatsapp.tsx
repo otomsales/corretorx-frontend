@@ -1,20 +1,21 @@
 import { useMemo, useRef, useState, useEffect, type ReactNode } from 'react'
 import {
-  Search, MoreVertical, MessageSquarePlus, Check, CheckCheck, Pin, BellOff, Smile,
-  Mic, SendHorizontal, ArrowLeft, Phone, X, Sparkles, CalendarPlus, Plus, Zap, Camera,
-  FileText, Image as ImageIcon, AudioLines, Lock, Star, HeartPulse, Wallet, ChevronDown, SlidersHorizontal, GripVertical,
-  Archive, Trash2, Copy, Reply, Forward, Info, ListChecks, Filter, Smartphone,
-} from 'lucide-react'
+  MagnifyingGlass, ChatCircleDots, Check, Checks, PushPin, BellSlash, Smiley,
+  Microphone, PaperPlaneRight, ArrowLeft, Phone, X, Sparkle, CalendarPlus, Plus, Lightning, Camera,
+  FileText, Image as ImageIcon, Waveform, Lock, Star, Heartbeat, Wallet, CaretDown, SlidersHorizontal, DotsSixVertical,
+  Archive, Trash, Copy, ArrowBendUpLeft, ArrowBendUpRight, Info, Funnel, DeviceMobile,
+  Robot, PencilSimple, DotsThree, Snowflake, GraduationCap, ArrowsLeftRight, Prohibit, VideoCamera, Alarm,
+} from '@phosphor-icons/react'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent, type DraggableAttributes } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { brl, formatPhone, initials, pickAvatar } from '@/lib/format'
+import { formatPhone, initials, pickAvatar } from '@/lib/format'
 import { STAGE_CATALOG, PIPELINES, OWNERS, lifecycleOf, type Lead } from '@/lib/funil-data'
 import { useLeads } from '@/store/leads'
 import { TierPill, StatusDot } from '@/components/leads/LeadBadges'
-import { StageCell, OwnerCell, FollowupInlineCell, PipelineCell, InlineText, money } from '@/components/leads/InlineCell'
+import { StageCell, OwnerCell, FollowupInlineCell, PipelineCell, InlineText } from '@/components/leads/InlineCell'
 import { useCustomFields } from '@/store/customFields'
 import { CustomFieldInline, ManageFieldsModal } from '@/components/leads/CustomFields'
 import { TagsEditor } from '@/components/leads/TagsEditor'
@@ -64,11 +65,11 @@ function Avatar({ url, name, size = 'h-12 w-12' }: { url?: string; name: string;
 function Ticks({ status }: { status?: WaMsg['status'] }) {
   if (!status) return null
   if (status === 'sent') return <Check className="h-3.5 w-3.5 shrink-0 opacity-60" />
-  return <CheckCheck className={cn('h-3.5 w-3.5 shrink-0', status === 'read' ? 'text-[#53bdeb]' : 'opacity-60')} />
+  return <Checks className={cn('h-3.5 w-3.5 shrink-0', status === 'read' ? 'text-[#53bdeb]' : 'opacity-60')} />
 }
 
 const mediaIcon = (t?: WaMsg['type']) =>
-  t === 'image' ? <ImageIcon className="h-3.5 w-3.5" /> : t === 'audio' ? <AudioLines className="h-3.5 w-3.5" /> : t === 'doc' ? <FileText className="h-3.5 w-3.5" /> : null
+  t === 'image' ? <ImageIcon className="h-3.5 w-3.5" /> : t === 'audio' ? <Waveform className="h-3.5 w-3.5" /> : t === 'doc' ? <FileText className="h-3.5 w-3.5" /> : null
 
 /** Stamp da lista (estilo WhatsApp): hoje→hora, ontem→"Ontem", antes→dia/data. */
 const convStamp = (day: string, t: string) => {
@@ -77,6 +78,15 @@ const convStamp = (day: string, t: string) => {
 }
 
 const MENU_SHADOW = 'shadow-[0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]'
+
+/** Nível de SLA: só alerta quando a ÚLTIMA msg é do cliente (aguardando nossa resposta) e está velha. */
+const slaLevel = (c: WaConv): 'medium' | 'high' | null => {
+  const last = c.messages[c.messages.length - 1]
+  if (!last || last.fromMe) return null
+  const d = last.day.trim().toLowerCase()
+  if (d === 'hoje') return null
+  return d === 'ontem' ? 'medium' : 'high'
+}
 const ATTACH = [{ icon: FileText, label: 'Documento' }, { icon: ImageIcon, label: 'Fotos e vídeos' }, { icon: Camera, label: 'Câmera' }]
 const QUICK_MSGS = [
   'Olá! 😊 Sou corretor(a) de planos de saúde. Como posso te ajudar?',
@@ -111,7 +121,7 @@ function FGroup({ title, children }: { title: string; children: ReactNode }) {
 function FPill({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
   return (
     <button onClick={onClick} className={cn('inline-flex items-center gap-1 rounded-md px-2 py-1 text-[12px] font-medium transition-colors', on ? 'bg-teal text-primary-foreground shadow-sm' : 'bg-foreground/[0.04] text-muted-foreground ring-1 ring-inset ring-border/50 hover:bg-foreground/[0.08] hover:text-foreground')}>
-      {on && <Check className="h-3 w-3 shrink-0" strokeWidth={3} />}{children}
+      {on && <Check className="h-3 w-3 shrink-0" />}{children}
     </button>
   )
 }
@@ -125,7 +135,8 @@ function ConversationList({ convs, selectedId, onSelect, onUpdate }: {
   const [chip, setChip] = useState('all')
   const [filterOpen, setFilterOpen] = useState(false)
   const [connOpen, setConnOpen] = useState(false)
-  const [activeConn, setActiveConn] = useState(CONNECTIONS[0].id)
+  const [activeConns, setActiveConns] = useState<string[]>(CONNECTIONS.map((c) => c.id))
+  const toggleConn = (id: string) => setActiveConns((p) => (p.includes(id) ? (p.length > 1 ? p.filter((x) => x !== id) : p) : [...p, id]))
   const [f, setF] = useState<{ tags: string[]; owners: string[]; tiers: string[]; stages: string[]; ai: 'all' | 'on' | 'off' }>({ tags: [], owners: [], tiers: [], stages: [], ai: 'all' })
   const allTags = [...new Set(leads.flatMap((l) => l.tags ?? []))]
   const activeCount = f.tags.length + f.owners.length + f.tiers.length + f.stages.length + (f.ai !== 'all' ? 1 : 0)
@@ -133,13 +144,13 @@ function ConversationList({ convs, selectedId, onSelect, onUpdate }: {
   const clearF = () => setF({ tags: [], owners: [], tiers: [], stages: [], ai: 'all' })
 
   const convMenu = (c: WaConv): MenuItem[] => [
-    { label: c.pinned ? 'Desafixar' : 'Fixar', icon: Pin, onClick: () => onUpdate(c.id, { pinned: !c.pinned }) },
-    { label: c.unread > 0 ? 'Marcar como lida' : 'Marcar como não lida', icon: CheckCheck, onClick: () => onUpdate(c.id, { unread: c.unread > 0 ? 0 : 1 }) },
-    { label: c.muted ? 'Reativar notificações' : 'Silenciar', icon: BellOff, onClick: () => onUpdate(c.id, { muted: !c.muted }) },
+    { label: c.pinned ? 'Desafixar' : 'Fixar', icon: PushPin, onClick: () => onUpdate(c.id, { pinned: !c.pinned }) },
+    { label: c.unread > 0 ? 'Marcar como lida' : 'Marcar como não lida', icon: Checks, onClick: () => onUpdate(c.id, { unread: c.unread > 0 ? 0 : 1 }) },
+    { label: c.muted ? 'Reativar notificações' : 'Silenciar', icon: BellSlash, onClick: () => onUpdate(c.id, { muted: !c.muted }) },
     { label: c.favorite ? 'Remover dos favoritos' : 'Favoritar', icon: Star, onClick: () => onUpdate(c.id, { favorite: !c.favorite }) },
     { divider: true, label: '' },
     { label: c.archived ? 'Desarquivar conversa' : 'Arquivar conversa', icon: Archive, onClick: () => onUpdate(c.id, { archived: !c.archived }) },
-    { label: 'Apagar conversa', icon: Trash2, danger: true, onClick: () => toast('Conversa apagada') },
+    { label: 'Apagar conversa', icon: Trash, danger: true, onClick: () => toast('Conversa apagada') },
   ]
   const list = useMemo(() => {
     const term = q.trim().toLowerCase()
@@ -175,30 +186,35 @@ function ConversationList({ convs, selectedId, onSelect, onUpdate }: {
         <div className="flex items-center gap-1">
           {/* seletor de conexão / número (cliente com +1 conexão) */}
           <div className="relative">
-            <button onClick={() => { setConnOpen((v) => !v); setFilterOpen(false) }} title="Número conectado" className={cn('grid h-9 w-9 place-items-center rounded-full', connOpen ? 'text-teal' : wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Smartphone className="h-[18px] w-[18px]" /></button>
+            <button onClick={() => { setConnOpen((v) => !v); setFilterOpen(false) }} title="Número conectado" className={cn('grid h-9 w-9 place-items-center rounded-full', connOpen ? 'text-teal' : wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><DeviceMobile className="h-[18px] w-[18px]" /></button>
             {connOpen && (
               <>
                 <button type="button" className="fixed inset-0 z-40" onClick={() => setConnOpen(false)} aria-hidden />
                 <div className={cn('absolute right-0 top-full z-50 mt-2 w-60 rounded-xl border border-white/10 p-1', wa.panel, MENU_SHADOW)}>
-                  <p className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60">Número conectado</p>
-                  {CONNECTIONS.map((k) => (
-                    <button key={k.id} onClick={() => { setActiveConn(k.id); setConnOpen(false); toast(`Número: ${k.label}`) }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-foreground/[0.06]">
-                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-teal/12 text-teal ring-1 ring-inset ring-teal/15"><Smartphone className="h-4 w-4" /></span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[13px] font-medium text-foreground">{k.label}</span>
-                        <span className="block font-mono text-[11px] text-muted-foreground">{k.phone}</span>
-                      </span>
-                      {activeConn === k.id && <Check className="h-4 w-4 shrink-0 text-teal" strokeWidth={2.5} />}
-                    </button>
-                  ))}
+                  <p className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60">Números conectados</p>
+                  {CONNECTIONS.map((k) => {
+                    const on = activeConns.includes(k.id)
+                    return (
+                      <button key={k.id} onClick={() => toggleConn(k.id)} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-foreground/[0.06]">
+                        <span className={cn('grid h-8 w-8 shrink-0 place-items-center rounded-full ring-1 ring-inset transition-colors', on ? 'bg-teal/12 text-teal ring-teal/15' : 'bg-foreground/[0.05] text-muted-foreground/60 ring-border/40')}><DeviceMobile className="h-4 w-4" /></span>
+                        <span className="min-w-0 flex-1">
+                          <span className={cn('block text-[13px] font-medium', on ? 'text-foreground' : 'text-muted-foreground')}>{k.label}</span>
+                          <span className="block font-mono text-[11px] text-muted-foreground/70">{k.phone}</span>
+                        </span>
+                        <span className={cn('grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[5px] border-[1.5px] transition-colors', on ? 'border-transparent bg-teal' : 'border-input')}>
+                          {on && <Check className="h-3 w-3 text-primary-foreground" />}
+                        </span>
+                      </button>
+                    )
+                  })}
                 </div>
               </>
             )}
           </div>
-          <button title="Nova conversa" className={cn('grid h-9 w-9 place-items-center rounded-full', wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><MessageSquarePlus className="h-5 w-5" /></button>
+          <button title="Nova conversa" className={cn('grid h-9 w-9 place-items-center rounded-full', wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><ChatCircleDots className="h-5 w-5" /></button>
           <div className="relative">
             <button onClick={() => { setFilterOpen((v) => !v); setConnOpen(false) }} title="Filtros personalizados" className={cn('relative grid h-9 w-9 place-items-center rounded-full', filterOpen || activeCount ? 'text-teal' : wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}>
-              <Filter className="h-[18px] w-[18px]" />
+              <Funnel className="h-[18px] w-[18px]" />
               {activeCount > 0 && <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-teal px-1 text-[9px] font-bold text-primary-foreground">{activeCount}</span>}
             </button>
             {filterOpen && (
@@ -206,7 +222,7 @@ function ConversationList({ convs, selectedId, onSelect, onUpdate }: {
                 <button type="button" className="fixed inset-0 z-40" onClick={() => setFilterOpen(false)} aria-hidden />
                 <div className={cn('absolute right-0 top-full z-50 mt-2 max-h-[74vh] w-[288px] overflow-auto rounded-xl border border-white/10 p-3', wa.panel, MENU_SHADOW)}>
                   <div className="mb-1 flex items-center justify-between border-b border-border/40 pb-2.5">
-                    <span className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-foreground/80"><Filter className="h-3.5 w-3.5 text-teal" /> Filtros</span>
+                    <span className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-foreground/80"><Funnel className="h-3.5 w-3.5 text-teal" /> Filtros</span>
                     {activeCount > 0 && <button onClick={clearF} className="rounded-md px-1.5 py-0.5 text-[11px] font-medium text-teal transition-colors hover:bg-teal/10">Limpar ({activeCount})</button>}
                   </div>
                   <FGroup title="Atendimento IA">
@@ -238,7 +254,7 @@ function ConversationList({ convs, selectedId, onSelect, onUpdate }: {
       {/* busca */}
       <div className="shrink-0 px-3 py-2">
         <div className={cn('flex h-9 items-center gap-3 rounded-lg px-3', wa.header)}>
-          <Search className={cn('h-4 w-4', wa.sub)} />
+          <MagnifyingGlass className={cn('h-4 w-4', wa.sub)} />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Pesquisar ou começar nova conversa" className={cn('h-full flex-1 bg-transparent text-[13.5px] outline-none placeholder:text-[13px]', wa.sub)} />
         </div>
       </div>
@@ -259,9 +275,13 @@ function ConversationList({ convs, selectedId, onSelect, onUpdate }: {
           const active = c.id === selectedId
           const lead = c.leadId ? getLead(c.leadId) : undefined
           const owner = lead ? OWNERS.find((o) => o.id === lead.ownerId)?.name : undefined
+          const sla = slaLevel(c)
           return (
             <button key={c.id} onClick={() => onSelect(c.id)} onContextMenu={(e) => openMenu(e, convMenu(c))} className={cn('flex w-full gap-3 px-3 py-2.5 text-left transition-colors', active ? wa.active : wa.hover)}>
-              <span className="shrink-0 self-center"><Avatar url={c.avatarUrl} name={c.name} /></span>
+              <span className={cn('relative shrink-0 self-center rounded-full', sla === 'high' ? 'ring-2 ring-rose-500' : sla === 'medium' ? 'ring-2 ring-amber-400' : '')}>
+                <Avatar url={c.avatarUrl} name={c.name} />
+                {sla && <span className={cn('absolute -bottom-1 -right-1 grid h-4 place-items-center rounded-full px-1 text-[8px] font-bold text-white ring-2 ring-[#111b21]', sla === 'high' ? 'bg-rose-500' : 'bg-amber-500 text-amber-950')} title="Aguardando resposta">{convStamp(c.messages[c.messages.length - 1].day, '')}</span>}
+              </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="truncate text-[14.5px] font-semibold text-foreground">{c.name}</span>
@@ -277,8 +297,8 @@ function ConversationList({ convs, selectedId, onSelect, onUpdate }: {
                     <span className="truncate">{last?.text}</span>
                   </span>
                   <span className="flex shrink-0 items-center gap-1.5">
-                    {c.muted && <BellOff className={cn('h-3.5 w-3.5', wa.sub)} />}
-                    {c.pinned && <Pin className={cn('h-3.5 w-3.5', wa.sub)} />}
+                    {c.muted && <BellSlash className={cn('h-3.5 w-3.5', wa.sub)} />}
+                    {c.pinned && <PushPin className={cn('h-3.5 w-3.5', wa.sub)} />}
                     {c.unread > 0 && <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#00a884] px-1 text-[10px] font-bold text-[#111b21]">{c.unread}</span>}
                   </span>
                 </div>
@@ -307,51 +327,227 @@ function ConversationList({ convs, selectedId, onSelect, onUpdate }: {
 }
 
 /* ============================ THREAD ============================ */
-function Bubble({ msg, tail, onCtx }: { msg: WaMsg; tail: boolean; onCtx?: (e: React.MouseEvent) => void }) {
+const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏']
+
+function ReactBtn({ onOpen }: { onOpen: () => void }) {
+  return <button onClick={onOpen} title="Reagir" className="mb-1 grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-foreground/10 group-hover/msg:opacity-100"><Smiley className="h-4 w-4" /></button>
+}
+
+function Bubble({ msg, tail, onCtx, replied, onReplyClick, onReact, reactOpen, setReactOpen, highlight, setRef, editing, editText, setEditText, onSaveEdit, onCancelEdit }: {
+  msg: WaMsg; tail: boolean; onCtx?: (e: React.MouseEvent) => void
+  replied?: WaMsg; onReplyClick: (id: string) => void
+  onReact: (msgId: string, emoji: string) => void; reactOpen: boolean; setReactOpen: (v: boolean) => void
+  highlight: boolean; setRef: (el: HTMLDivElement | null) => void
+  editing: boolean; editText: string; setEditText: (v: string) => void; onSaveEdit: () => void; onCancelEdit: () => void
+}) {
   const me = msg.fromMe
+  if (msg.deleted) {
+    return (
+      <div ref={setRef} className={cn('flex px-2', me ? 'justify-end' : 'justify-start')}>
+        <div className={cn('inline-flex max-w-[65%] items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] italic text-muted-foreground shadow-sm', me ? wa.bubbleOut : wa.bubbleIn)}><Prohibit className="h-3.5 w-3.5" /> Mensagem apagada</div>
+      </div>
+    )
+  }
+  const reactions = Object.entries(msg.reactions ?? {}).filter(([, n]) => n > 0)
   return (
-    <div className={cn('flex px-2', me ? 'justify-end' : 'justify-start')}>
-      <div
-        onContextMenu={onCtx}
-        className={cn(
-          'relative max-w-[65%] rounded-lg px-2.5 py-1.5 text-[14px] leading-snug shadow-sm',
-          me ? cn(wa.bubbleOut, 'text-[#111b21] dark:text-[#e9edef]') : cn(wa.bubbleIn, 'text-[#111b21] dark:text-[#e9edef]'),
-          tail && (me ? 'rounded-tr-sm' : 'rounded-tl-sm'),
+    <div ref={setRef} className={cn('group/msg flex items-end gap-1 px-2', me ? 'justify-end' : 'justify-start')}>
+      {me && <ReactBtn onOpen={() => setReactOpen(true)} />}
+      <div className="relative max-w-[65%]">
+        <div onContextMenu={onCtx} className={cn('relative rounded-lg px-2.5 py-1.5 text-[14px] leading-snug shadow-sm transition-all', me ? cn(wa.bubbleOut, 'text-[#111b21] dark:text-[#e9edef]') : cn(wa.bubbleIn, 'text-[#111b21] dark:text-[#e9edef]'), tail && (me ? 'rounded-tr-sm' : 'rounded-tl-sm'), highlight && 'ring-2 ring-teal ring-offset-1 ring-offset-transparent')}>
+          {replied && (
+            <button onClick={() => onReplyClick(replied.id)} className="mb-1 flex w-full flex-col rounded-md border-l-[3px] border-teal bg-black/10 px-2 py-1 text-left dark:bg-white/[0.06]">
+              <span className="text-[11px] font-semibold text-teal">{replied.fromMe ? 'Você' : 'Cliente'}</span>
+              <span className="truncate text-[12px] text-muted-foreground">{replied.deleted ? 'Mensagem apagada' : (replied.text || 'Mídia')}</span>
+            </button>
+          )}
+          {editing ? (
+            <div className="flex w-64 flex-col gap-1.5">
+              <textarea autoFocus value={editText} onChange={(e) => setEditText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onSaveEdit() } else if (e.key === 'Escape') onCancelEdit() }} rows={2} className="w-full resize-none rounded-md border border-teal bg-background/60 px-2 py-1 text-[13.5px] text-foreground outline-none" />
+              <div className="flex justify-end gap-1.5 text-[12px]"><button onClick={onCancelEdit} className="rounded px-2 py-0.5 text-muted-foreground hover:bg-foreground/10">Cancelar</button><button onClick={onSaveEdit} className="rounded bg-teal px-2 py-0.5 font-semibold text-primary-foreground">Salvar</button></div>
+            </div>
+          ) : (
+            <>
+              <span className="whitespace-pre-wrap break-words">{fmt(msg.text)}</span>
+              <span className={cn('float-right ml-2 mt-1.5 flex translate-y-0.5 items-center gap-1 text-[10px]', me ? 'text-[#667781] dark:text-[#aebac1]' : wa.sub)}>
+                {msg.starred && <Star className="h-3 w-3 fill-current text-amber-400" />}
+                {msg.edited && <span className="italic">editada</span>}
+                {msg.t}{me && <Ticks status={msg.status} />}
+              </span>
+            </>
+          )}
+          {reactOpen && (
+            <>
+              <button type="button" className="fixed inset-0 z-40" onClick={() => setReactOpen(false)} aria-hidden />
+              <div className={cn('absolute bottom-full z-50 mb-1 flex gap-0.5 rounded-full border border-white/10 p-1', me ? 'right-0' : 'left-0', wa.panel, MENU_SHADOW)}>
+                {QUICK_REACTIONS.map((e) => <button key={e} onClick={() => { onReact(msg.id, e); setReactOpen(false) }} className="grid h-8 w-8 place-items-center rounded-full text-[18px] transition-transform hover:scale-125">{e}</button>)}
+              </div>
+            </>
+          )}
+        </div>
+        {reactions.length > 0 && (
+          <div className={cn('-mt-1.5 flex flex-wrap gap-0.5 pl-1', me ? 'justify-end pr-1' : 'justify-start')}>
+            {reactions.map(([e, n]) => <button key={e} onClick={() => onReact(msg.id, e)} className={cn('inline-flex items-center gap-0.5 rounded-full border border-white/10 px-1.5 py-px text-[11px] shadow-sm', wa.panel, msg.myReaction === e && 'ring-1 ring-teal')}>{e}{n > 1 && <span className="text-[10px] text-muted-foreground">{n}</span>}</button>)}
+          </div>
         )}
-      >
-        <span className="whitespace-pre-wrap break-words">{fmt(msg.text)}</span>
-        <span className={cn('float-right ml-2 mt-1.5 flex translate-y-0.5 items-center gap-1 text-[10px]', me ? 'text-[#667781] dark:text-[#aebac1]' : wa.sub)}>
-          {msg.t}{me && <Ticks status={msg.status} />}
-        </span>
+      </div>
+      {!me && <ReactBtn onOpen={() => setReactOpen(true)} />}
+    </div>
+  )
+}
+
+function VendaGanhaSheet({ lead, onClose, onConfirm }: { lead: Lead; onClose: () => void; onConfirm: (patch: Partial<Lead>) => void }) {
+  const [operadora, setOperadora] = useState(lead.operadora !== '—' ? lead.operadora : '')
+  const [vidas, setVidas] = useState(String(lead.vidas))
+  const [valor, setValor] = useState(lead.value ? (lead.value / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '')
+  const [produto, setProduto] = useState(lead.produtoSugerido ?? '')
+  const [contexto, setContexto] = useState(lead.contexto ?? '')
+  const inputCls = 'h-10 w-full rounded-lg border border-input bg-background px-3 text-[13.5px] outline-none transition-colors focus:border-teal'
+  const confirm = () => {
+    const cents = Math.round((parseFloat(valor.replace(/\./g, '').replace(',', '.')) || 0) * 100)
+    onConfirm({ operadora: operadora.trim() || '—', vidas: Math.max(1, Number(vidas) || 1), value: cents, produtoSugerido: produto.trim() || undefined, contexto: contexto.trim() || undefined })
+  }
+  return (
+    <div className="fixed inset-0 z-[80] grid place-items-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-border/40 bg-card shadow-2xl">
+        <div className="flex items-center gap-2.5 border-b border-border/40 px-5 py-4"><span className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-[15px]">🎉</span><h3 className="text-[15px] font-bold">Registrar venda ganha</h3></div>
+        <div className="space-y-3 p-5">
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block"><span className="mb-1 block text-[12px] text-muted-foreground">Operadora</span><input value={operadora} onChange={(e) => setOperadora(e.target.value)} className={inputCls} /></label>
+            <label className="block"><span className="mb-1 block text-[12px] text-muted-foreground">Vidas</span><input value={vidas} onChange={(e) => setVidas(e.target.value.replace(/\D/g, ''))} inputMode="numeric" className={cn(inputCls, 'font-mono')} /></label>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block"><span className="mb-1 block text-[12px] text-muted-foreground">Valor / mês (R$)</span><input value={valor} onChange={(e) => setValor(e.target.value)} inputMode="decimal" placeholder="1.846,00" className={cn(inputCls, 'font-mono')} /></label>
+            <label className="block"><span className="mb-1 block text-[12px] text-muted-foreground">Produto</span><input value={produto} onChange={(e) => setProduto(e.target.value)} className={inputCls} /></label>
+          </div>
+          <label className="block"><span className="mb-1 block text-[12px] text-muted-foreground">Contexto do fechamento</span><textarea value={contexto} onChange={(e) => setContexto(e.target.value)} rows={2} className={cn(inputCls, 'h-auto resize-none py-2 leading-relaxed')} /></label>
+        </div>
+        <div className="flex justify-end gap-2 border-t border-border/40 px-5 py-3">
+          <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted/60">Cancelar</button>
+          <button onClick={confirm} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">Confirmar ganho 🎉</button>
+        </div>
       </div>
     </div>
   )
 }
 
-function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
-  conv: WaConv; onSend: (t: string) => void; onBack: () => void; onTogglePanel: () => void; panelOpen: boolean
+const randCode = (n: number) => Math.random().toString(36).replace(/[^a-z]/g, '').padEnd(n, 'x').slice(0, n)
+
+function MeetingDialog({ onClose, onCreated }: { onClose: () => void; onCreated: (text: string, dias: number, title: string) => void }) {
+  const [title, setTitle] = useState('Reunião')
+  const [date, setDate] = useState(() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10) })
+  const [time, setTime] = useState('10:00')
+  const [duration, setDuration] = useState('30')
+  const [guests, setGuests] = useState<string[]>([])
+  const [guestInput, setGuestInput] = useState('')
+  const inputCls = 'mt-1 h-9 w-full rounded-lg border border-input bg-background px-3 text-[13.5px] text-foreground outline-none transition-colors focus:border-teal'
+  const labelCls = 'block text-[11px] font-medium text-muted-foreground'
+
+  const addGuest = () => {
+    const e = guestInput.trim().toLowerCase()
+    if (!e) return
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { toast.error('E-mail inválido'); return }
+    if (!guests.includes(e)) setGuests((p) => [...p, e])
+    setGuestInput('')
+  }
+
+  const create = () => {
+    if (!title.trim() || !date || !time) { toast.error('Preencha título, data e hora'); return }
+    const start = new Date(`${date}T${time}:00`)
+    const fmt = `${start.toLocaleDateString('pt-BR')} às ${start.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+    const meetLink = `https://meet.google.com/${randCode(3)}-${randCode(4)}-${randCode(3)}`
+    const guestsLine = guests.length ? `\n👥 ${guests.join(', ')}` : ''
+    const text = `📅 *${title.trim()}*\n🕐 ${fmt} (${duration} min)${guestsLine}\n🔗 ${meetLink}`
+    const dias = Math.max(0, Math.round((new Date(`${date}T00:00:00`).getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000))
+    onCreated(text, dias, title.trim())
+  }
+
+  return (
+    <div className="fixed inset-0 z-[80] grid place-items-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-border/40 bg-card shadow-2xl">
+        <div className="flex items-center justify-between border-b border-border/40 px-5 py-4">
+          <h3 className="flex items-center gap-2 text-[15px] font-bold"><VideoCamera className="h-4 w-4 text-teal" /> Reunião por Google Meet</h3>
+          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-muted"><X className="h-4 w-4" /></button>
+        </div>
+        <div className="space-y-3 p-5">
+          <label className="block"><span className={labelCls}>Título</span><input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} /></label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block"><span className={labelCls}>Data</span><input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ colorScheme: 'dark' }} className={inputCls} /></label>
+            <label className="block"><span className={labelCls}>Hora</span><input type="time" value={time} onChange={(e) => setTime(e.target.value)} style={{ colorScheme: 'dark' }} className={inputCls} /></label>
+          </div>
+          <label className="block"><span className={labelCls}>Duração (min)</span><input type="number" min={15} step={15} value={duration} onChange={(e) => setDuration(e.target.value)} className={cn(inputCls, 'font-mono')} /></label>
+          <div>
+            <span className={labelCls}>Convidados (e-mail)</span>
+            {guests.length > 0 && (
+              <div className="mb-1.5 mt-1 flex flex-wrap gap-1.5">
+                {guests.map((g) => (
+                  <span key={g} className="inline-flex items-center gap-1 rounded-md bg-foreground/[0.06] py-0.5 pl-2 pr-1 text-[12px] text-foreground">{g}<button onClick={() => setGuests((p) => p.filter((x) => x !== g))} className="grid h-4 w-4 place-items-center rounded text-muted-foreground transition-colors hover:text-danger"><X className="h-3 w-3" /></button></span>
+                ))}
+              </div>
+            )}
+            <input value={guestInput} onChange={(e) => setGuestInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addGuest() } }} onBlur={addGuest} type="email" placeholder="convidado@email.com" className={inputCls} />
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 border-t border-border/40 px-5 py-3">
+          <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted/60">Cancelar</button>
+          <button onClick={create} className="flex items-center gap-1.5 rounded-lg bg-teal px-4 py-2 text-sm font-bold text-primary-foreground transition hover:brightness-110"><VideoCamera className="h-4 w-4" /> Criar e enviar link</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ChatThread({ conv, convs, onSend, onPatchMsg, onReact, onForward, onUpdateConv, onBack, onTogglePanel, panelOpen }: {
+  conv: WaConv; convs: WaConv[]
+  onSend: (t: string, opts?: Partial<WaMsg>) => void
+  onPatchMsg: (msgId: string, patch: Partial<WaMsg>) => void
+  onReact: (msgId: string, emoji: string) => void
+  onForward: (text: string, targetIds: string[]) => void
+  onUpdateConv: (id: string, patch: Partial<WaConv>) => void
+  onBack: () => void; onTogglePanel: () => void; panelOpen: boolean
 }) {
-  const { moveStage } = useLeads()
+  const { moveStage, getLead, saveLead } = useLeads()
   const { menu: bubMenu, open: openBub, close: closeBub } = useContextMenu()
+  const lead = conv.leadId ? getLead(conv.leadId) : undefined
   const mark = (stage: 'ganho' | 'perdido') => { if (conv.leadId) { moveStage(conv.leadId, stage); toast.success(stage === 'ganho' ? `${conv.name} marcado como Ganho 🎉` : `${conv.name} marcado como Perdido`) } }
-  const bubbleMenu = (msg: WaMsg): MenuItem[] => [
-    { label: 'Dados da mensagem', icon: Info, onClick: () => toast('Dados da mensagem — em breve') },
-    { label: 'Responder', icon: Reply, onClick: () => toast('Responder — em breve') },
-    { label: 'Copiar', icon: Copy, onClick: () => { navigator.clipboard?.writeText(msg.text); toast.success('Mensagem copiada') } },
-    { label: 'Encaminhar', icon: Forward, onClick: () => toast('Encaminhar — em breve') },
-    { label: 'Fixar', icon: Pin, onClick: () => toast('Mensagem fixada') },
-    { label: 'Perguntar à X IA', icon: Sparkles, onClick: () => toast('Perguntando à X IA — em breve') },
-    { label: 'Favoritar', icon: Star, onClick: () => toast('Mensagem favoritada') },
-    { label: 'Selecionar', icon: ListChecks, onClick: () => toast('Selecionar — em breve') },
-    { divider: true, label: '' },
-    { label: 'Apagar', icon: Trash2, danger: true, onClick: () => toast('Mensagem apagada') },
-  ]
+  const [ganhaOpen, setGanhaOpen] = useState(false)
+  const [meetingOpen, setMeetingOpen] = useState(false)
   const [draft, setDraft] = useState('')
   const [attachOpen, setAttachOpen] = useState(false)
   const [quickOpen, setQuickOpen] = useState(false)
   const [emojiOpen, setEmojiOpen] = useState(false)
+  const [replyTo, setReplyTo] = useState<WaMsg | null>(null)
+  const [editing, setEditing] = useState<WaMsg | null>(null)
+  const [editText, setEditText] = useState('')
+  const [forwardMsg, setForwardMsg] = useState<WaMsg | null>(null)
+  const [fwdTargets, setFwdTargets] = useState<string[]>([])
+  const [hdrMenuOpen, setHdrMenuOpen] = useState(false)
+  const [transferOpen, setTransferOpen] = useState(false)
+  const [frioOpen, setFrioOpen] = useState(false)
+  const [reactFor, setReactFor] = useState<string | null>(null)
+  const [highlightId, setHighlightId] = useState<string | null>(null)
   const endRef = useRef<HTMLDivElement>(null)
+  const msgRefs = useRef<Record<string, HTMLDivElement | null>>({})
   useEffect(() => { endRef.current?.scrollIntoView({ block: 'end' }) }, [conv.id, conv.messages.length])
+  useEffect(() => { setReplyTo(null); setEditing(null) }, [conv.id])
+
+  const scrollToMsg = (id: string) => { const el = msgRefs.current[id]; if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); setHighlightId(id); setTimeout(() => setHighlightId((h) => (h === id ? null : h)), 2000) } }
+  const msgById = (id?: string) => conv.messages.find((m) => m.id === id)
+
+  const bubbleMenu = (msg: WaMsg): MenuItem[] => [
+    { label: 'Responder', icon: ArrowBendUpLeft, onClick: () => setReplyTo(msg) },
+    { label: 'Copiar', icon: Copy, onClick: () => { navigator.clipboard?.writeText(msg.text); toast.success('Mensagem copiada') } },
+    { label: 'Encaminhar', icon: ArrowBendUpRight, onClick: () => setForwardMsg(msg) },
+    ...(msg.fromMe ? [{ label: 'Editar', icon: PencilSimple, onClick: () => { setEditing(msg); setEditText(msg.text) } }] : []),
+    { label: 'Perguntar à X IA', icon: Sparkle, onClick: () => toast('Perguntando à X IA — em breve') },
+    { label: msg.starred ? 'Desfavoritar' : 'Favoritar', icon: Star, onClick: () => onPatchMsg(msg.id, { starred: !msg.starred }) },
+    { divider: true, label: '' },
+    { label: 'Apagar', icon: Trash, danger: true, onClick: () => onPatchMsg(msg.id, { deleted: true }) },
+  ]
+
+  const transfer = (ownerId: string) => { const l = conv.leadId ? getLead(conv.leadId) : undefined; if (l) { saveLead({ ...l, ownerId }); toast.success(`Transferido para ${OWNERS.find((o) => o.id === ownerId)?.name}`) } setTransferOpen(false); setHdrMenuOpen(false) }
+  const setFrio = (dias: number) => { onUpdateConv(conv.id, { cold: true, coldCadence: dias }); toast.success(`Cliente frio · recontato a cada ${dias} dias`); setFrioOpen(false); setHdrMenuOpen(false) }
 
   // agrupa por dia
   const groups: { day: string; msgs: WaMsg[] }[] = []
@@ -361,7 +557,8 @@ function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
     else groups.push({ day: msg.day, msgs: [msg] })
   }
 
-  const send = () => { if (draft.trim()) { onSend(draft.trim()); setDraft('') } }
+  const send = () => { const t = draft.trim(); if (!t) return; onSend(t, replyTo ? { replyToId: replyTo.id } : {}); setDraft(''); setReplyTo(null) }
+  const saveEdit = () => { if (editing) { const t = editText.trim(); onPatchMsg(editing.id, { text: t || editing.text, edited: true }); setEditing(null) } }
 
   return (
     <section className="flex min-w-0 flex-1 flex-col">
@@ -377,14 +574,28 @@ function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
         </button>
         {conv.leadId && (
           <div className="hidden shrink-0 items-center gap-1.5 md:flex">
-            <button onClick={() => mark('ganho')} title="Marcar venda ganha" className="rounded-md bg-emerald-600 px-2.5 py-1 text-[12px] font-semibold text-white transition hover:brightness-110">Ganho</button>
+            <button onClick={() => setGanhaOpen(true)} title="Marcar venda ganha" className="rounded-md bg-emerald-600 px-2.5 py-1 text-[12px] font-semibold text-white transition hover:brightness-110">Ganho</button>
             <button onClick={() => mark('perdido')} title="Marcar venda perdida" className="rounded-md bg-rose-600 px-2.5 py-1 text-[12px] font-semibold text-white transition hover:brightness-110">Perdido</button>
           </div>
         )}
         <div className="flex items-center gap-1">
+          <button onClick={() => setMeetingOpen(true)} title="Agendar reunião" className={cn('grid h-9 w-9 place-items-center rounded-full', wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><CalendarPlus className="h-[18px] w-[18px]" /></button>
+          <button onClick={() => { onUpdateConv(conv.id, { aiOn: !conv.aiOn }); toast(conv.aiOn ? 'X IA pausada nesta conversa' : 'X IA reativada') }} title={conv.aiOn ? 'Pausar X IA' : 'Reativar X IA'} className={cn('grid h-9 w-9 place-items-center rounded-full transition-colors', conv.aiOn ? 'text-teal' : wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}>{conv.aiOn ? <Robot className="h-[19px] w-[19px]" weight="fill" /> : <Robot className="h-[19px] w-[19px]" />}</button>
           <button title="Ligar" className={cn('grid h-9 w-9 place-items-center rounded-full', wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Phone className="h-[18px] w-[18px]" /></button>
-          <button title="Buscar" className={cn('grid h-9 w-9 place-items-center rounded-full', wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Search className="h-[18px] w-[18px]" /></button>
-          <button title="Painel do lead" onClick={onTogglePanel} className={cn('grid h-9 w-9 place-items-center rounded-full hover:bg-black/5 dark:hover:bg-white/10', panelOpen ? 'text-teal' : wa.sub)}><MoreVertical className="h-5 w-5" /></button>
+          <div className="relative">
+            <button onClick={() => setHdrMenuOpen((v) => !v)} title="Mais" className={cn('grid h-9 w-9 place-items-center rounded-full', hdrMenuOpen ? 'text-teal' : wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><DotsThree className="h-5 w-5" /></button>
+            {hdrMenuOpen && (
+              <>
+                <button type="button" className="fixed inset-0 z-40" onClick={() => setHdrMenuOpen(false)} aria-hidden />
+                <div className={cn('absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-white/10 p-1', wa.panel, MENU_SHADOW)}>
+                  {conv.leadId && <button onClick={() => { setTransferOpen(true); setHdrMenuOpen(false) }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13.5px] text-foreground transition-colors hover:bg-foreground/[0.06]"><ArrowsLeftRight className="h-4 w-4 text-teal" /> Transferir atendimento</button>}
+                  <button onClick={() => { setFrioOpen(true); setHdrMenuOpen(false) }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13.5px] text-foreground transition-colors hover:bg-foreground/[0.06]"><Snowflake className="h-4 w-4 text-teal" /> Marcar cliente frio</button>
+                  <button onClick={() => { toast('Conversa enviada como exemplo p/ treinar a X IA'); setHdrMenuOpen(false) }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13.5px] text-foreground transition-colors hover:bg-foreground/[0.06]"><GraduationCap className="h-4 w-4 text-teal" /> Ensinar X IA</button>
+                </div>
+              </>
+            )}
+          </div>
+          <button title="Painel do lead" onClick={onTogglePanel} className={cn('grid h-9 w-9 place-items-center rounded-full hover:bg-black/5 dark:hover:bg-white/10', panelOpen ? 'text-teal' : wa.sub)}><Info className="h-[18px] w-[18px]" /></button>
         </div>
       </div>
 
@@ -393,7 +604,7 @@ function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
         <div className="mx-auto flex max-w-3xl flex-col gap-1.5">
           {conv.aiOn && (
             <div className="sticky top-0 z-10 mx-auto mb-1.5 flex justify-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-teal/90 px-3 py-1 text-[11.5px] font-semibold text-primary-foreground shadow-md ring-1 ring-white/10 backdrop-blur-sm"><Sparkles className="h-3 w-3" /> X IA ativa nesta conversa</span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-teal/90 px-3 py-1 text-[11.5px] font-semibold text-primary-foreground shadow-md ring-1 ring-white/10 backdrop-blur-sm"><Sparkle className="h-3 w-3" /> X IA ativa nesta conversa</span>
             </div>
           )}
           <div className="mx-auto mb-2 flex items-center gap-1.5 rounded-lg bg-[#fdf4c5] px-3 py-1.5 text-center text-[11.5px] text-[#54656f] shadow-sm dark:bg-[#182229] dark:text-[#8696a0]">
@@ -404,7 +615,25 @@ function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
               <div className="my-1.5 flex justify-center">
                 <span className="rounded-lg bg-white px-3 py-1 text-[11px] font-medium uppercase text-[#54656f] shadow-sm dark:bg-[#182229] dark:text-[#8696a0]">{g.day}</span>
               </div>
-              {g.msgs.map((msg, i) => <Bubble key={msg.id} msg={msg} tail={i === 0 || g.msgs[i - 1].fromMe !== msg.fromMe} onCtx={(e) => openBub(e, bubbleMenu(msg))} />)}
+              {g.msgs.map((msg, i) => (
+                <Bubble
+                  key={msg.id} msg={msg}
+                  tail={i === 0 || g.msgs[i - 1].fromMe !== msg.fromMe}
+                  onCtx={(e) => openBub(e, bubbleMenu(msg))}
+                  replied={msgById(msg.replyToId)}
+                  onReplyClick={scrollToMsg}
+                  onReact={onReact}
+                  reactOpen={reactFor === msg.id}
+                  setReactOpen={(v) => setReactFor(v ? msg.id : null)}
+                  highlight={highlightId === msg.id}
+                  setRef={(el) => { msgRefs.current[msg.id] = el }}
+                  editing={editing?.id === msg.id}
+                  editText={editText}
+                  setEditText={setEditText}
+                  onSaveEdit={saveEdit}
+                  onCancelEdit={() => setEditing(null)}
+                />
+              ))}
             </div>
           ))}
           <div ref={endRef} />
@@ -413,6 +642,16 @@ function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
 
       {/* input — pill flutuante sobre o wallpaper (estilo WhatsApp) */}
       <div className={cn('shrink-0 px-4 pb-3 pt-1', wa.wall)} style={{ backgroundImage: DOODLE }}>
+        {replyTo && (
+          <div className="mb-1.5 flex items-center gap-2 rounded-lg border-l-[3px] border-teal bg-black/10 px-2.5 py-1.5 dark:bg-white/[0.06]">
+            <ArrowBendUpLeft className="h-4 w-4 shrink-0 text-teal" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold text-teal">{replyTo.fromMe ? 'Você' : conv.name}</p>
+              <p className="truncate text-[12px] text-muted-foreground">{replyTo.text || 'Mídia'}</p>
+            </div>
+            <button onClick={() => setReplyTo(null)} title="Cancelar" className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/10"><X className="h-3.5 w-3.5" /></button>
+          </div>
+        )}
         <div className="flex items-end gap-1.5">
           {/* + anexos */}
           <div className="relative shrink-0">
@@ -436,7 +675,7 @@ function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
           {/* pill */}
           <div className={cn('flex flex-1 items-end gap-0.5 rounded-[26px] px-2 py-1 shadow-sm', wa.field)}>
             <div className="relative shrink-0">
-              <button onClick={() => { setEmojiOpen((v) => !v); setQuickOpen(false); setAttachOpen(false) }} title="Emoji" className={cn('grid h-9 w-9 place-items-center rounded-full', emojiOpen ? 'text-teal' : wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Smile className="h-[22px] w-[22px]" /></button>
+              <button onClick={() => { setEmojiOpen((v) => !v); setQuickOpen(false); setAttachOpen(false) }} title="Emoji" className={cn('grid h-9 w-9 place-items-center rounded-full', emojiOpen ? 'text-teal' : wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Smiley className="h-[22px] w-[22px]" /></button>
               {emojiOpen && (
                 <>
                   <button type="button" className="fixed inset-0 z-40" onClick={() => setEmojiOpen(false)} aria-hidden />
@@ -457,7 +696,7 @@ function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
             />
             {/* raio — mensagens rápidas */}
             <div className="relative shrink-0">
-              <button onClick={() => { setQuickOpen((v) => !v); setAttachOpen(false) }} title="Mensagens rápidas" className={cn('grid h-9 w-9 place-items-center rounded-full', quickOpen ? 'text-teal' : wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Zap className="h-[19px] w-[19px]" /></button>
+              <button onClick={() => { setQuickOpen((v) => !v); setAttachOpen(false) }} title="Mensagens rápidas" className={cn('grid h-9 w-9 place-items-center rounded-full', quickOpen ? 'text-teal' : wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Lightning className="h-[19px] w-[19px]" /></button>
               {quickOpen && (
                 <>
                   <button type="button" className="fixed inset-0 z-40" onClick={() => setQuickOpen(false)} aria-hidden />
@@ -474,17 +713,93 @@ function ChatThread({ conv, onSend, onBack, onTogglePanel, panelOpen }: {
 
           {/* enviar / áudio */}
           {draft.trim()
-            ? <button onClick={send} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#00a884] text-[#111b21] shadow-sm transition hover:brightness-110"><SendHorizontal className="h-5 w-5" /></button>
-            : <button title="Áudio" className={cn('grid h-11 w-11 shrink-0 place-items-center rounded-full', wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Mic className="h-6 w-6" /></button>}
+            ? <button onClick={send} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#00a884] text-[#111b21] shadow-sm transition hover:brightness-110"><PaperPlaneRight className="h-5 w-5" /></button>
+            : <button title="Áudio" className={cn('grid h-11 w-11 shrink-0 place-items-center rounded-full', wa.sub, 'hover:bg-black/5 dark:hover:bg-white/10')}><Microphone className="h-6 w-6" /></button>}
         </div>
       </div>
       <ContextMenu menu={bubMenu} onClose={closeBub} />
+
+      {/* encaminhar */}
+      {forwardMsg && (
+        <div className="fixed inset-0 z-[80] grid place-items-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setForwardMsg(null)} />
+          <div className="relative flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-border/40 bg-card shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border/40 px-5 py-4">
+              <h3 className="flex items-center gap-2 text-[15px] font-bold"><ArrowBendUpRight className="h-4 w-4 text-teal" /> Encaminhar</h3>
+              <button onClick={() => setForwardMsg(null)} className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-muted"><X className="h-4 w-4" /></button>
+            </div>
+            <p className="truncate border-b border-border/40 px-5 py-2 text-[12px] text-muted-foreground">“{forwardMsg.text || 'Mídia'}”</p>
+            <div className="flex-1 overflow-y-auto p-2">
+              {convs.filter((c) => c.id !== conv.id).map((c) => {
+                const on = fwdTargets.includes(c.id)
+                return (
+                  <button key={c.id} onClick={() => setFwdTargets((p) => (on ? p.filter((x) => x !== c.id) : [...p, c.id]))} className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-foreground/[0.05]">
+                    <Avatar url={c.avatarUrl} name={c.name} size="h-9 w-9" />
+                    <span className="flex-1 truncate text-[13.5px] font-medium text-foreground">{c.name}</span>
+                    <span className={cn('grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[5px] border-[1.5px]', on ? 'border-transparent bg-teal' : 'border-input')}>{on && <Check className="h-3 w-3 text-primary-foreground" />}</span>
+                  </button>
+                )
+              })}
+            </div>
+            <div className="flex justify-end gap-2 border-t border-border/40 px-5 py-3">
+              <button onClick={() => setForwardMsg(null)} className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted/60">Cancelar</button>
+              <button disabled={!fwdTargets.length} onClick={() => { onForward(forwardMsg.text, fwdTargets); setForwardMsg(null); setFwdTargets([]) }} className="rounded-lg bg-teal px-4 py-2 text-sm font-bold text-primary-foreground transition hover:brightness-110 disabled:opacity-40">Encaminhar ({fwdTargets.length})</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* agendar reunião (Google Meet) */}
+      {meetingOpen && (
+        <MeetingDialog
+          onClose={() => setMeetingOpen(false)}
+          onCreated={(text, dias, title) => { onSend(text); if (lead) saveLead({ ...lead, followupInDays: dias, proximaAcao: title }); setMeetingOpen(false); toast.success('Reunião criada e link enviado') }}
+        />
+      )}
+
+      {/* venda ganha */}
+      {ganhaOpen && lead && <VendaGanhaSheet lead={lead} onClose={() => setGanhaOpen(false)} onConfirm={(patch) => { saveLead({ ...lead, ...patch }); moveStage(lead.id, 'ganho'); setGanhaOpen(false); toast.success('Venda registrada 🎉') }} />}
+
+      {/* transferir atendimento */}
+      {transferOpen && (
+        <div className="fixed inset-0 z-[80] grid place-items-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setTransferOpen(false)} />
+          <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-border/40 bg-card p-5 shadow-2xl">
+            <h3 className="mb-1 flex items-center gap-2 text-[15px] font-bold"><ArrowsLeftRight className="h-4 w-4 text-teal" /> Transferir atendimento</h3>
+            <p className="mb-3 text-[12.5px] text-muted-foreground">Escolha o vendedor que assume {conv.name}.</p>
+            <div className="flex flex-col gap-1">
+              {OWNERS.map((o) => (
+                <button key={o.id} onClick={() => transfer(o.id)} className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-foreground/[0.06]">
+                  <img src={o.avatar} alt="" className="h-8 w-8 rounded-full object-cover" />
+                  <span className="text-[13.5px] font-medium text-foreground">{o.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* cliente frio */}
+      {frioOpen && (
+        <div className="fixed inset-0 z-[80] grid place-items-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setFrioOpen(false)} />
+          <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-border/40 bg-card p-5 shadow-2xl">
+            <h3 className="mb-1 flex items-center gap-2 text-[15px] font-bold"><Snowflake className="h-4 w-4 text-teal" /> Cliente frio</h3>
+            <p className="mb-3 text-[12.5px] text-muted-foreground">Cadência de recontato automático para nutrir o lead.</p>
+            <div className="grid grid-cols-2 gap-2">
+              {[30, 60, 90, 120].map((d) => (
+                <button key={d} onClick={() => setFrio(d)} className="rounded-lg border border-border/60 py-2.5 text-[13px] font-medium text-foreground transition-colors hover:border-teal hover:bg-teal/[0.06]">a cada {d} dias</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
 
 /* ============================ PAINEL DO LEAD (refinado) ============================ */
-function PanelSection({ icon: Icon, title, children, defaultOpen = true, handle }: { icon: typeof HeartPulse; title: string; children: ReactNode; defaultOpen?: boolean; handle?: ReactNode }) {
+function PanelSection({ icon: Icon, title, children, defaultOpen = true, handle }: { icon: typeof Heartbeat; title: string; children: ReactNode; defaultOpen?: boolean; handle?: ReactNode }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
     <section className="px-5 py-4">
@@ -493,7 +808,7 @@ function PanelSection({ icon: Icon, title, children, defaultOpen = true, handle 
         <button onClick={() => setOpen((o) => !o)} className="flex flex-1 items-center gap-2 text-left">
           <Icon className="h-3.5 w-3.5 shrink-0 text-teal" />
           <span className="flex-1 text-[11.5px] font-bold uppercase tracking-[0.08em] text-foreground/85">{title}</span>
-          <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-transform', !open && '-rotate-90')} />
+          <CaretDown className={cn('h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-transform', !open && '-rotate-90')} />
         </button>
       </div>
       {open && children}
@@ -501,7 +816,7 @@ function PanelSection({ icon: Icon, title, children, defaultOpen = true, handle 
   )
 }
 
-type SectionKey = 'plano' | 'comercial' | 'custom' | 'xia'
+type SectionKey = 'comercial' | 'custom' | 'xia'
 
 function SortableSection({ id, children }: { id: SectionKey; children: (hp: { attributes: DraggableAttributes; listeners: ReturnType<typeof useSortable>['listeners'] }) => ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
@@ -526,7 +841,7 @@ function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
   const allTags = [...new Set(leads.flatMap((l) => l.tags ?? []))]
   const { fields: customFields } = useCustomFields()
   const [manageOpen, setManageOpen] = useState(false)
-  const [order, setOrder] = useState<SectionKey[]>(['plano', 'comercial', 'custom', 'xia'])
+  const [order, setOrder] = useState<SectionKey[]>(['comercial', 'custom', 'xia'])
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
   const onSectionDragEnd = (e: DragEndEvent) => {
     const { active, over } = e
@@ -537,16 +852,8 @@ function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
 
   const renderSection = (k: SectionKey, hp: { attributes: DraggableAttributes; listeners: ReturnType<typeof useSortable>['listeners'] }) => {
     if (!lead) return null
-    const grip = <button {...hp.attributes} {...hp.listeners} className="grid h-5 w-5 shrink-0 cursor-grab touch-none place-items-center rounded text-muted-foreground/25 transition-colors hover:text-muted-foreground active:cursor-grabbing" title="Arrastar para reordenar"><GripVertical className="h-3.5 w-3.5" /></button>
+    const grip = <button {...hp.attributes} {...hp.listeners} className="grid h-5 w-5 shrink-0 cursor-grab touch-none place-items-center rounded text-muted-foreground/25 transition-colors hover:text-muted-foreground active:cursor-grabbing" title="Arrastar para reordenar"><DotsSixVertical className="h-3.5 w-3.5" /></button>
     switch (k) {
-      case 'plano': return (
-        <PanelSection icon={HeartPulse} title="Plano de saúde" handle={grip}>
-          <ERow k="Operadora"><InlineText value={lead.operadora !== '—' ? lead.operadora : ''} display={lead.operadora !== '—' ? lead.operadora : undefined} onCommit={(v) => patch({ operadora: v.trim() || '—' })} /></ERow>
-          <ERow k="Plano"><InlineText value={lead.plano} onCommit={(v) => patch({ plano: v.trim() })} /></ERow>
-          <ERow k="Vidas"><InlineText type="number" value={String(lead.vidas)} onCommit={(v) => patch({ vidas: Math.max(1, Number(v) || 1) })} /></ERow>
-          <ERow k="Valor / mês"><InlineText type="currency" value={money.toInput(lead.value)} display={lead.value ? brl(lead.value) : undefined} onCommit={(v) => patch({ value: money.toCents(v) })} /></ERow>
-        </PanelSection>
-      )
       case 'comercial': return (
         <PanelSection icon={Wallet} title="Comercial" handle={grip}>
           <ERow k="Etapa"><StageCell lead={lead} onPick={(s) => { moveStage(lead.id, s); toast.success(`Etapa: ${STAGE_CATALOG[s]?.label ?? s}`) }} /></ERow>
@@ -569,7 +876,7 @@ function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
         </PanelSection>
       )
       case 'xia': return (
-        <PanelSection icon={Sparkles} title="Resumo X IA" handle={grip}>
+        <PanelSection icon={Sparkle} title="Resumo X IA" handle={grip}>
           <XiaSummary lead={lead} />
         </PanelSection>
       )
@@ -603,17 +910,6 @@ function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
         </div>
 
         {/* ações rápidas (compactas) */}
-        <div className="grid grid-cols-2 gap-2 px-5 pt-3">
-          {[
-            { icon: CalendarPlus, label: 'Agendar', on: () => toast('Agendar retorno — em breve') },
-            { icon: Star, label: 'Favoritar', on: () => toast('Favoritado') },
-          ].map((a) => (
-            <button key={a.label} onClick={a.on} className="flex flex-col items-center gap-1 rounded-lg border border-border/50 bg-card/40 py-1.5 text-[10.5px] font-medium text-muted-foreground transition-colors hover:border-teal/40 hover:text-foreground">
-              <a.icon className="h-3.5 w-3.5 text-teal" /> {a.label}
-            </button>
-          ))}
-        </div>
-
         {lead && (
           <div className="px-5 pb-2 pt-2.5">
             <button onClick={() => openDetail(lead.id)} className="w-full rounded-lg bg-teal py-2.5 text-[13px] font-bold text-primary-foreground transition hover:brightness-110">
@@ -642,28 +938,67 @@ function LeadPanel({ conv, onClose }: { conv: WaConv; onClose: () => void }) {
 
 /* ============================ PÁGINA ============================ */
 export default function Whatsapp() {
+  const { getLead, saveLead } = useLeads()
   const [convs, setConvs] = useState<WaConv[]>(WA_CONVERSATIONS)
   const [selectedId, setSelectedId] = useState(WA_CONVERSATIONS[0].id)
   const [panelOpen, setPanelOpen] = useState(true)
+  const [guardTarget, setGuardTarget] = useState<string | null>(null)
   const conv = convs.find((c) => c.id === selectedId)!
 
-  const select = (id: string) => { setSelectedId(id); setConvs((prev) => prev.map((c) => (c.id === id ? { ...c, unread: 0 } : c))) }
+  const doSelect = (id: string) => { setSelectedId(id); setConvs((prev) => prev.map((c) => (c.id === id ? { ...c, unread: 0 } : c))) }
+  const needsReturn = (c: WaConv) => { const l = c.leadId ? getLead(c.leadId) : undefined; return !!l && ['proposta', 'negociacao'].includes(l.stage) && l.followupInDays == null }
+  const select = (id: string) => { if (id !== selectedId && needsReturn(conv)) setGuardTarget(id); else doSelect(id) }
+  const setGuardReturn = (dias: number | null) => { const l = conv.leadId ? getLead(conv.leadId) : undefined; if (l && dias != null) saveLead({ ...l, followupInDays: dias }); if (guardTarget) doSelect(guardTarget); setGuardTarget(null) }
   const updateConv = (id: string, patch: Partial<WaConv>) => setConvs((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)))
 
-  const send = (text: string) => {
+  const send = (text: string, opts: Partial<WaMsg> = {}) => {
     const id = `m-${Date.now()}`
-    const msg: WaMsg = { id, fromMe: true, text, t: nowHM(), day: 'Hoje', status: 'sent' }
+    const msg: WaMsg = { id, fromMe: true, text, t: nowHM(), day: 'Hoje', status: 'sent', ...opts }
     setConvs((prev) => prev.map((c) => (c.id === selectedId ? { ...c, messages: [...c.messages, msg], unread: 0 } : c)))
     const setStatus = (s: WaMsg['status']) => setConvs((prev) => prev.map((c) => c.id === selectedId ? { ...c, messages: c.messages.map((mm) => (mm.id === id ? { ...mm, status: s } : mm)) } : c))
     setTimeout(() => setStatus('delivered'), 700)
     setTimeout(() => setStatus('read'), 1800)
   }
+  const patchMsg = (msgId: string, patch: Partial<WaMsg>) => setConvs((prev) => prev.map((c) => c.id === selectedId ? { ...c, messages: c.messages.map((m) => (m.id === msgId ? { ...m, ...patch } : m)) } : c))
+  const react = (msgId: string, emoji: string) => setConvs((prev) => prev.map((c) => {
+    if (c.id !== selectedId) return c
+    return { ...c, messages: c.messages.map((m) => {
+      if (m.id !== msgId) return m
+      const r: Record<string, number> = { ...(m.reactions ?? {}) }
+      const mine = m.myReaction
+      if (mine) { r[mine] = (r[mine] ?? 1) - 1; if (r[mine] <= 0) delete r[mine] }
+      let my: string | undefined
+      if (mine !== emoji) { r[emoji] = (r[emoji] ?? 0) + 1; my = emoji }
+      return { ...m, reactions: r, myReaction: my }
+    }) }
+  }))
+  const forward = (text: string, targetIds: string[]) => {
+    setConvs((prev) => prev.map((c) => targetIds.includes(c.id)
+      ? { ...c, messages: [...c.messages, { id: `m-${Date.now()}-${c.id}`, fromMe: true, text, t: nowHM(), day: 'Hoje', status: 'sent' as const }] }
+      : c))
+    toast.success(`Encaminhada para ${targetIds.length} conversa${targetIds.length > 1 ? 's' : ''}`)
+  }
 
   return (
     <div className="flex h-full min-h-0 overflow-hidden">
       <ConversationList convs={convs} selectedId={selectedId} onSelect={select} onUpdate={updateConv} />
-      <ChatThread conv={conv} onSend={send} onBack={() => {}} onTogglePanel={() => setPanelOpen((v) => !v)} panelOpen={panelOpen} />
+      <ChatThread conv={conv} convs={convs} onSend={send} onPatchMsg={patchMsg} onReact={react} onForward={forward} onUpdateConv={updateConv} onBack={() => {}} onTogglePanel={() => setPanelOpen((v) => !v)} panelOpen={panelOpen} />
       {panelOpen && <LeadPanel conv={conv} onClose={() => setPanelOpen(false)} />}
+      {guardTarget && (
+        <div className="fixed inset-0 z-[90] grid place-items-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-border/40 bg-card p-5 shadow-2xl">
+            <h3 className="mb-1 flex items-center gap-2 text-[15px] font-bold"><Alarm className="h-4 w-4 text-teal" /> Defina o próximo retorno</h3>
+            <p className="mb-3.5 text-[12.5px] text-muted-foreground">{conv.name} está em etapa quente. Agende o retorno antes de sair da conversa.</p>
+            <div className="grid grid-cols-2 gap-2">
+              {[{ d: 0, l: 'Hoje' }, { d: 1, l: 'Amanhã' }, { d: 3, l: 'Em 3 dias' }, { d: 7, l: 'Em 1 semana' }].map((o) => (
+                <button key={o.l} onClick={() => setGuardReturn(o.d)} className="rounded-lg border border-border/60 py-2.5 text-[13px] font-medium text-foreground transition-colors hover:border-teal hover:bg-teal/[0.06]">{o.l}</button>
+              ))}
+            </div>
+            <button onClick={() => setGuardReturn(null)} className="mt-3 w-full text-center text-[12px] text-muted-foreground/70 transition-colors hover:text-muted-foreground">Agora não</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

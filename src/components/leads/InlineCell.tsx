@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { Check } from 'lucide-react'
+import { Check, CalendarDots, MagnifyingGlass } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { OWNERS, PIPELINES, STAGE_CATALOG, lifecycleOf, type Lead } from '@/lib/funil-data'
 import { brl } from '@/lib/format'
@@ -11,29 +11,38 @@ const reaisToCents = (v: string) => Math.round((parseFloat(v.replace(/\./g, '').
 export const money = { toInput: centsToReais, toCents: reaisToCents, fmt: brl }
 
 const SHADOW =
-  'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]'
+  'shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]'
 
 type Opt<T extends string> = { value: T; label: string; node?: ReactNode }
 
 /** Editor inline genérico: trigger (badge) → popover em portal (escapa o overflow da tabela). */
 function InlinePick<T extends string>({
-  trigger, options, value, onPick, width = 176,
+  trigger, options, value, onPick, width = 176, footer, searchable, onCreate,
 }: {
   trigger: ReactNode
   options: Opt<T>[]
   value?: T
   onPick: (v: T) => void
   width?: number
+  footer?: (close: () => void) => ReactNode
+  searchable?: boolean
+  onCreate?: (v: string) => void
 }) {
   const btnRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null)
+  const [q, setQ] = useState('')
 
   const open = (e: React.MouseEvent) => {
     e.stopPropagation()
+    setQ('')
     const r = btnRef.current!.getBoundingClientRect()
     setPos({ left: r.left, top: r.bottom + 4 })
   }
+
+  const term = q.trim().toLowerCase()
+  const list = term ? options.filter((o) => o.label.toLowerCase().includes(term)) : options
+  const canCreate = !!(onCreate && term && !options.some((o) => o.label.toLowerCase() === term))
 
   // reposiciona se estourar a viewport (abre pra cima / encosta na borda)
   useLayoutEffect(() => {
@@ -62,9 +71,24 @@ function InlinePick<T extends string>({
           <button type="button" className="fixed inset-0 z-[80] cursor-default" onClick={(e) => { e.stopPropagation(); setPos(null) }} aria-hidden />
           <div
             ref={panelRef} style={{ left: pos.left, top: pos.top, width }}
-            className={cn('dropdown-in fixed z-[90] max-h-72 overflow-auto rounded-lg border border-white/10 bg-card p-1', SHADOW)}
+            className={cn('dropdown-in fixed z-[90] flex max-h-72 flex-col overflow-hidden rounded-lg border border-white/10 bg-card p-1', SHADOW)}
           >
-            {options.map((o) => (
+            {searchable && (
+              <div className="mb-1 flex shrink-0 items-center gap-1.5 border-b border-border/50 px-1.5 pb-1.5">
+                <MagnifyingGlass className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55" />
+                <input
+                  autoFocus value={q} onChange={(e) => setQ(e.target.value)} onClick={(e) => e.stopPropagation()}
+                  placeholder={onCreate ? 'Buscar ou criar…' : 'Buscar…'}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); if (canCreate) { onCreate!(q.trim()); setPos(null) } else if (list.length) { onPick(list[0].value); setPos(null) } }
+                    else if (e.key === 'Escape') setPos(null)
+                  }}
+                  className="h-6 w-full min-w-0 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/50"
+                />
+              </div>
+            )}
+            <div className="min-h-0 flex-1 overflow-auto">
+            {list.map((o) => (
               <button
                 key={o.value}
                 onClick={(e) => { e.stopPropagation(); setPos(null); if (o.value !== value) onPick(o.value) }}
@@ -74,6 +98,14 @@ function InlinePick<T extends string>({
                 {value === o.value && <Check className="h-3.5 w-3.5 shrink-0 text-teal" />}
               </button>
             ))}
+            {canCreate && (
+              <button onClick={(e) => { e.stopPropagation(); onCreate!(q.trim()); setPos(null) }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px] font-medium text-teal transition-colors hover:bg-teal/[0.08]">
+                + Criar “{q.trim()}”
+              </button>
+            )}
+            {searchable && list.length === 0 && !canCreate && <p className="px-2 py-1.5 text-[13px] text-muted-foreground">Nada encontrado.</p>}
+            </div>
+            {footer && <div className="mt-1 shrink-0 border-t border-border/50 pt-1">{footer(() => setPos(null))}</div>}
           </div>
         </>,
         document.body,
@@ -150,10 +182,20 @@ export function FollowupInlineCell({ lead, onPick }: { lead: Lead; onPick: (days
   const value = lead.followupInDays == null ? 'none' : String(lead.followupInDays)
   return (
     <InlinePick
-      value={value} width={160}
+      value={value} width={168}
       onPick={(v) => onPick(v === 'none' ? null : Number(v))}
       trigger={<FollowupCell days={lead.followupInDays} />}
       options={FOLLOW_OPTS}
+      footer={(close) => (
+        <label className="flex items-center gap-1.5 rounded px-2 py-1.5 text-[12px] text-muted-foreground">
+          <CalendarDots className="h-3.5 w-3.5 shrink-0 text-teal" />
+          <input
+            type="date" style={{ colorScheme: 'dark' }}
+            onChange={(e) => { const v = e.target.value; if (!v) return; const dias = Math.round((new Date(v + 'T00:00:00').getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000); onPick(dias); close() }}
+            className="h-7 min-w-0 flex-1 rounded border border-input bg-background px-1.5 text-[12px] text-foreground outline-none focus:border-teal"
+          />
+        </label>
+      )}
     />
   )
 }
@@ -169,13 +211,14 @@ export function PipelineCell({ value, onPick }: { value?: string; onPick: (id: s
   )
 }
 
-/** Seleção inline genérica (portal) — p/ campos personalizáveis. */
-export function InlineSelect({ value, options, onPick, placeholder = '—', width = 180 }: {
-  value?: string; options: string[]; onPick: (v: string) => void; placeholder?: string; width?: number
+/** Seleção inline genérica (portal) — p/ campos personalizáveis. Digitável (filtra) quando > 2 opções. */
+export function InlineSelect({ value, options, onPick, placeholder = '—', width = 180, searchable }: {
+  value?: string; options: string[]; onPick: (v: string) => void; placeholder?: string; width?: number; searchable?: boolean
 }) {
   return (
     <InlinePick
       value={value} onPick={onPick} width={width}
+      searchable={searchable ?? options.length > 2}
       trigger={<span className={cn('text-[13.5px] font-medium', value ? 'text-foreground' : 'text-muted-foreground/50')}>{value || placeholder}</span>}
       options={options.map((o) => ({ value: o, label: o }))}
     />

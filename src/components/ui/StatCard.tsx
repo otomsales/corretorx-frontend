@@ -1,5 +1,5 @@
-import type { LucideIcon } from 'lucide-react'
-import { ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import type { Icon } from '@phosphor-icons/react'
+import { ArrowUpRight, ArrowDownRight } from '@phosphor-icons/react'
 import { Sparkline } from './Sparkline'
 import { cn } from '@/lib/utils'
 
@@ -11,7 +11,7 @@ export function StatCard({
   sub?: string
   trend?: number
   history?: number[]
-  icon?: LucideIcon
+  icon?: Icon
 }) {
   const up = (trend ?? 0) >= 0
   return (

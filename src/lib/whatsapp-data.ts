@@ -8,6 +8,17 @@ export interface WaMsg {
   day: string // 'Hoje' | 'Ontem' | 'dd/MM'
   status?: 'sent' | 'delivered' | 'read'
   type?: 'text' | 'image' | 'audio' | 'doc'
+  replyToId?: string // mensagem citada
+  reactions?: Record<string, number> // emoji → contagem
+  myReaction?: string // emoji que EU reagi
+  starred?: boolean
+  edited?: boolean
+  deleted?: boolean
+  mediaUrl?: string // objectURL (mock) da imagem/doc/audio
+  fileName?: string
+  fileSize?: number // bytes
+  caption?: string // legenda da mídia
+  duration?: number // segundos (áudio)
 }
 
 export interface WaConv {
@@ -24,6 +35,10 @@ export interface WaConv {
   favorite?: boolean
   archived?: boolean
   aiOn?: boolean
+  cold?: boolean // cliente frio (cadência de recontato)
+  coldCadence?: number // dias entre toques
+  lastActivityHours?: number // horas desde a última msg (SLA/inatividade)
+  scheduled?: { id: string; text: string; whenLabel: string }[] // mensagens agendadas
   messages: WaMsg[]
 }
 

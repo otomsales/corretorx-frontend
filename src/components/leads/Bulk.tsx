@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Check, AlertTriangle, Plus, type LucideIcon } from 'lucide-react'
+import { X, Check, Warning, Plus, type Icon } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { OWNERS, STAGE_CATALOG } from '@/lib/funil-data'
 import { tagTint } from '@/lib/tags'
@@ -14,7 +14,7 @@ export const COMERCIAL_STAGE_OPTS = ['novo', 'atendimento', 'qualificado', 'prop
   .map((id) => ({ value: id, label: STAGE_CATALOG[id].label, dot: `hsl(var(${STAGE_COLOR[id]}))` }))
 
 /* ============================ Menu de contexto (botão direito) ============================ */
-export type MenuItem = { label: string; icon?: LucideIcon; onClick?: () => void; danger?: boolean; divider?: boolean }
+export type MenuItem = { label: string; icon?: Icon; onClick?: () => void; danger?: boolean; divider?: boolean }
 export type MenuState = { x: number; y: number; items: MenuItem[] } | null
 
 export function useContextMenu() {
@@ -48,7 +48,7 @@ export function ContextMenu({ menu, onClose }: { menu: MenuState; onClose: () =>
 /* ============================ Barra de seleção ============================ */
 export function SelectionToolbar({ count, total, allSelected, onSelectAll, onClear, actions, hideSelectAll }: {
   count: number; total: number; allSelected: boolean; onSelectAll: () => void; onClear: () => void
-  actions: { label: string; icon: LucideIcon; onClick: () => void; danger?: boolean }[]; hideSelectAll?: boolean
+  actions: { label: string; icon: Icon; onClick: () => void; danger?: boolean }[]; hideSelectAll?: boolean
 }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-teal/30 bg-teal/[0.06] px-3 py-2">
@@ -153,7 +153,7 @@ export function BulkDeleteModal({ count, onConfirm, onClose }: { count: number; 
         <button onClick={onConfirm} className="rounded-lg bg-danger px-3.5 py-2 text-[13px] font-bold text-white transition hover:brightness-110">Excluir {count}</button></>}
     >
       <div className="flex items-start gap-3 p-3">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-danger/12"><AlertTriangle className="h-4 w-4 text-danger" /></span>
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-danger/12"><Warning className="h-4 w-4 text-danger" /></span>
         <p className="text-[14px] leading-relaxed text-muted-foreground">Excluir <span className="font-semibold text-foreground">{count} lead{count > 1 ? 's' : ''}</span> da carteira? Esta ação não pode ser desfeita.</p>
       </div>
     </Shell>
@@ -168,7 +168,7 @@ export function Checkbox({ checked, indeterminate, onChange, className }: { chec
       onClick={(e) => { e.stopPropagation(); onChange() }}
       className={cn('grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[5px] border-[1.5px] transition-all', checked || indeterminate ? 'border-transparent bg-teal' : 'border-input hover:border-teal/60', className)}
     >
-      {indeterminate ? <span className="h-0.5 w-2.5 rounded bg-primary-foreground" /> : checked ? <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3.5} /> : null}
+      {indeterminate ? <span className="h-0.5 w-2.5 rounded bg-primary-foreground" /> : checked ? <Check className="h-3 w-3 text-primary-foreground" /> : null}
     </button>
   )
 }

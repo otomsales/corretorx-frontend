@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Wallet, HeartPulse, GitBranch, Trophy, ClipboardCheck } from 'lucide-react'
+import { Wallet, Heartbeat, GitBranch, Trophy, ClipboardText } from '@phosphor-icons/react'
 import { StatCard } from '@/components/ui/StatCard'
 import { Sparkline } from '@/components/ui/Sparkline'
 import { cn } from '@/lib/utils'
@@ -156,10 +156,10 @@ export default function Dashboard() {
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-5">
         <StatCard label="Receita recorrente" value={brl(kpis.mrrCents)} sub="MRR da carteira" trend={kpis.mrrTrend} history={kpis.mrrHistory} icon={Wallet} />
-        <StatCard label="Vidas ativas" value={num(kpis.vidasAtivas)} sub="sob gestão" trend={kpis.vidasTrend} history={kpis.vidasHistory} icon={HeartPulse} />
+        <StatCard label="Vidas ativas" value={num(kpis.vidasAtivas)} sub="sob gestão" trend={kpis.vidasTrend} history={kpis.vidasHistory} icon={Heartbeat} />
         <StatCard label="Negociações" value={num(kpis.negociacoesAbertas)} sub={`${brl(kpis.pipelineCents)} em aberto`} trend={kpis.negociacoesTrend} history={kpis.negociacoesHistory} icon={GitBranch} />
         <StatCard label="Conversão" value={pct(kpis.conversao)} sub={`${kpis.ganhosMes} ganhos no mês`} trend={kpis.conversaoTrend} history={kpis.conversaoHistory} icon={Trophy} />
-        <StatCard label="Implantações" value={num(kpis.implantacoesAndamento)} sub="em andamento" trend={kpis.implantacoesTrend} history={kpis.implantacoesHistory} icon={ClipboardCheck} />
+        <StatCard label="Implantações" value={num(kpis.implantacoesAndamento)} sub="em andamento" trend={kpis.implantacoesTrend} history={kpis.implantacoesHistory} icon={ClipboardText} />
       </div>
 
       {/* Funil + Receita */}

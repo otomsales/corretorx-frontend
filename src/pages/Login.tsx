@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react'
+import { Eye, EyeSlash, CircleNotch, ArrowLeft } from '@phosphor-icons/react'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { cn } from '@/lib/utils'
 
@@ -72,7 +72,7 @@ export default function Login() {
                   aria-label={showPw ? 'Ocultar senha' : 'Mostrar senha'}
                   className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground/60 hover:text-muted-foreground"
                 >
-                  {showPw ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+                  {showPw ? <EyeSlash className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
                 </button>
               </div>
             </div>
@@ -96,7 +96,7 @@ export default function Login() {
             )}
           >
             {loading ? (
-              <><Loader2 className="h-[18px] w-[18px] animate-spin" /> {mode === 'login' ? 'Entrando…' : 'Enviando…'}</>
+              <><CircleNotch className="h-[18px] w-[18px] animate-spin" /> {mode === 'login' ? 'Entrando…' : 'Enviando…'}</>
             ) : mode === 'login' ? 'Entrar' : 'Enviar link de recuperação'}
           </button>
         </form>

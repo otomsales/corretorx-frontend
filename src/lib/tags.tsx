@@ -38,5 +38,5 @@ export function TagColorsProvider({ children }: { children: ReactNode }) {
 
 export function TagChip({ tag, className, cls }: { tag: string; className?: string; cls?: string }) {
   const { colorOf } = useTagColors()
-  return <span className={cn('inline-block whitespace-nowrap rounded-md px-1.5 py-0.5 text-[11px] font-medium', cls ?? colorOf(tag), className)}>{tag}</span>
+  return <span className={cn('inline-block whitespace-nowrap rounded px-1.5 py-0.5 text-[11px] font-medium', cls ?? colorOf(tag), className)}>{tag}</span>
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, Check, X, Plus, AlertTriangle } from 'lucide-react'
+import { CaretDown, Check, X, Plus, Warning } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { OWNERS, STAGE_CATALOG, type Lead } from '@/lib/funil-data'
 import { useCustomFields } from '@/store/customFields'
@@ -35,7 +35,7 @@ function FormSelect({ value, onChange, options, placeholder }: {
         className={cn('flex h-10 w-full items-center justify-between gap-2 rounded-lg border bg-background px-3 text-[13.5px] outline-none transition-colors', open ? 'border-teal' : 'border-input hover:border-teal/50')}
       >
         <span className={cn('truncate', current ? 'text-foreground' : 'text-muted-foreground/55')}>{current ?? placeholder}</span>
-        <ChevronDown className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform', open && 'rotate-180')} />
+        <CaretDown className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
         <>
@@ -158,7 +158,7 @@ export function LeadFormModal({ initial, onClose, onSave }: {
         </div>
         <label className="flex cursor-pointer select-none items-center gap-2.5 pt-1 text-[13px] text-muted-foreground">
           <button type="button" role="checkbox" aria-checked={cnpj} onClick={() => setCnpj((v) => !v)} className={cn('grid h-[18px] w-[18px] shrink-0 place-items-center rounded-md border-[1.5px] transition-all', cnpj ? 'border-transparent bg-teal' : 'border-input')}>
-            {cnpj && <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3.5} />}
+            {cnpj && <Check className="h-3 w-3 text-primary-foreground" />}
           </button>
           É PME (tem CNPJ)
         </label>
@@ -248,7 +248,7 @@ export function ConfirmDeleteModal({ lead, onClose, onConfirm }: {
       </>}
     >
       <div className="flex items-start gap-3">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-danger/12"><AlertTriangle className="h-4 w-4 text-danger" /></span>
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-danger/12"><Warning className="h-4 w-4 text-danger" /></span>
         <p className="text-[14px] leading-relaxed text-muted-foreground">
           Excluir <span className="font-semibold text-foreground">{lead.name}</span> da carteira? Esta ação não pode ser desfeita.
         </p>

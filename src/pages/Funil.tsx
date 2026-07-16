@@ -11,10 +11,10 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import {
-  CalendarPlus, ChevronDown, ChevronUp, MessageCircle, PencilLine, TrendingUp, Plus,
-  SlidersHorizontal, Trash2, Check, X, GitBranch, Clock, Zap, MapPin, Calendar, Briefcase,
-  Layers, Wallet, Target, Ticket, Search, ArrowRightLeft, Tag, UserRound, Eye, type LucideIcon,
-} from 'lucide-react'
+  CalendarPlus, CaretDown, CaretUp, ChatCircle, PencilSimpleLine, TrendUp, Plus,
+  SlidersHorizontal, Trash, Check, X, GitBranch, Clock, Lightning, MapPin, Calendar, Briefcase,
+  Stack, Wallet, Target, Ticket, MagnifyingGlass, ArrowsLeftRight, Tag, User, Eye, type Icon,
+} from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { brl, pct, initials } from '@/lib/format'
@@ -291,15 +291,15 @@ export default function Funil() {
   const allSelected = boardIds.length > 0 && selCount === boardIds.length
   const selectAll = () => setSelected(new Set(boardIds))
   const cardMenu = (lead: Lead): MenuItem[] => [
-    { label: 'Conversar', icon: MessageCircle, onClick: () => navigate('/app/chat') },
+    { label: 'Conversar', icon: ChatCircle, onClick: () => navigate('/app/chat') },
     { label: 'Ver detalhe', icon: Eye, onClick: () => openDetail(lead.id) },
     { divider: true, label: '' },
-    { label: 'Mudar etapa', icon: ArrowRightLeft, onClick: () => openBulk('stage', [lead.id]) },
+    { label: 'Mudar etapa', icon: ArrowsLeftRight, onClick: () => openBulk('stage', [lead.id]) },
     { label: 'Mudar funil', icon: GitBranch, onClick: () => openBulk('pipeline', [lead.id]) },
     { label: 'Etiquetar', icon: Tag, onClick: () => openBulk('tag', [lead.id]) },
-    { label: 'Responsável', icon: UserRound, onClick: () => openBulk('owner', [lead.id]) },
+    { label: 'Responsável', icon: User, onClick: () => openBulk('owner', [lead.id]) },
     { divider: true, label: '' },
-    { label: 'Excluir', icon: Trash2, danger: true, onClick: () => openBulk('delete', [lead.id]) },
+    { label: 'Excluir', icon: Trash, danger: true, onClick: () => openBulk('delete', [lead.id]) },
   ]
   const selValue: SelCtxType = { selected, toggle: toggleSel, selectMany, onCtx: (e, lead) => openMenu(e, cardMenu(lead)) }
 
@@ -358,7 +358,7 @@ export default function Funil() {
             >
               <GitBranch className="h-5 w-5 text-teal" />
               {current.name}
-              <ChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', menuOpen && 'rotate-180')} />
+              <CaretDown className={cn('h-4 w-4 text-muted-foreground transition-transform', menuOpen && 'rotate-180')} />
             </button>
             {menuOpen && (
               <>
@@ -408,7 +408,7 @@ export default function Funil() {
             onClick={() => setReportOpen((v) => !v)}
             className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
           >
-            {reportOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            {reportOpen ? <CaretUp className="h-4 w-4" /> : <CaretDown className="h-4 w-4" />}
             {reportOpen ? 'Ocultar relatório' : 'Mostrar relatório'}
           </button>
           <div className="relative">
@@ -426,7 +426,7 @@ export default function Funil() {
       {/* Filtros — toolbar única */}
       <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border/40 bg-card p-1.5">
         <div className="relative flex items-center">
-          <Search className="pointer-events-none absolute left-2.5 h-4 w-4 text-muted-foreground" />
+          <MagnifyingGlass className="pointer-events-none absolute left-2.5 h-4 w-4 text-muted-foreground" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -465,14 +465,14 @@ export default function Funil() {
       {reportOpen && (
         <div className="grid shrink-0 gap-2.5 lg:grid-cols-[220px_1fr]">
           <div className="flex flex-col gap-2">
-            <MiniKpi label="Leads" value={String(metrics.openCount)} icon={Layers} />
+            <MiniKpi label="Leads" value={String(metrics.openCount)} icon={Stack} />
             <MiniKpi label="Conversão" value={pct(metrics.conversion, 0)} icon={Target} />
             <MiniKpi label="Valor" value={brl(metrics.funnelTotal)} icon={Wallet} />
             <MiniKpi label="Ticket" value={brl(metrics.ticket)} icon={Ticket} />
             <div className="relative flex items-center gap-3 overflow-hidden rounded-xl border border-border/40 bg-card px-3.5 py-2.5">
               <span className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-emerald-400 to-emerald-500" aria-hidden />
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-emerald-400/15 text-emerald-400">
-                <TrendingUp className="h-[18px] w-[18px]" />
+                <TrendUp className="h-[18px] w-[18px]" />
               </span>
               <div className="min-w-0">
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Previsão ponderada</div>
@@ -498,7 +498,7 @@ export default function Funil() {
                     {i > 0 && (
                       <div className="flex items-center justify-center py-px">
                         <span className="inline-flex items-center gap-0.5 rounded-full px-1 text-[9px] font-semibold leading-none text-muted-foreground/80">
-                          <ChevronDown className="h-2.5 w-2.5" />{step}%
+                          <CaretDown className="h-2.5 w-2.5" />{step}%
                         </span>
                       </div>
                     )}
@@ -525,11 +525,11 @@ export default function Funil() {
         <SelectionToolbar
           count={selCount} total={boardIds.length} allSelected={allSelected} onSelectAll={selectAll} onClear={clearSel} hideSelectAll
           actions={[
-            { label: 'Mover etapa', icon: ArrowRightLeft, onClick: () => openBulk('stage', [...selected]) },
+            { label: 'Mover etapa', icon: ArrowsLeftRight, onClick: () => openBulk('stage', [...selected]) },
             { label: 'Etiquetar', icon: Tag, onClick: () => openBulk('tag', [...selected]) },
-            { label: 'Responsável', icon: UserRound, onClick: () => openBulk('owner', [...selected]) },
+            { label: 'Responsável', icon: User, onClick: () => openBulk('owner', [...selected]) },
             { label: 'Mudar funil', icon: GitBranch, onClick: () => openBulk('pipeline', [...selected]) },
-            { label: 'Excluir', icon: Trash2, danger: true, onClick: () => openBulk('delete', [...selected]) },
+            { label: 'Excluir', icon: Trash, danger: true, onClick: () => openBulk('delete', [...selected]) },
           ]}
         />
       )}
@@ -604,7 +604,7 @@ function FilterDropdown({ value, onChange, options, allLabel }: {
         )}
       >
         {current}
-        <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} />
+        <CaretDown className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
         <>
@@ -635,7 +635,7 @@ function FilterDropdown({ value, onChange, options, allLabel }: {
   )
 }
 
-function MiniKpi({ label, value, icon: Icon }: { label: string; value: string; icon: LucideIcon }) {
+function MiniKpi({ label, value, icon: Icon }: { label: string; value: string; icon: Icon }) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-card px-3.5 py-2.5">
       <span className="flex items-center gap-2 truncate text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -734,7 +734,7 @@ function SlaTimer({ minutes }: { minutes: number }) {
   const cls = tone === 'danger' ? 'bg-danger text-white' : tone === 'warn' ? 'bg-warning text-warning-foreground' : 'bg-success text-success-foreground'
   return (
     <span className={cn('flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold tabular-nums', cls)} title="SLA de 1º atendimento">
-      <Zap className="h-2.5 w-2.5" /> {label}
+      <Lightning className="h-2.5 w-2.5" /> {label}
     </span>
   )
 }
@@ -771,7 +771,7 @@ function MoveMenu({ lead, move }: { lead: Lead; move: MoveCtx }) {
       <button
         ref={btnRef} onClick={toggle} onPointerDown={(e) => e.stopPropagation()} title="Mover"
         className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      ><ArrowRightLeft className="h-4 w-4" /></button>
+      ><ArrowsLeftRight className="h-4 w-4" /></button>
       {open && createPortal(
         <div className="fixed inset-0 z-[60]" onClick={() => setOpen(false)} onPointerDown={(e) => e.stopPropagation()}>
           <div className="absolute w-52 rounded-xl border border-white/10 bg-card p-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]" style={{ top: pos.top, left: pos.left }} onClick={(e) => e.stopPropagation()}>
@@ -880,9 +880,9 @@ function LeadCardBody({ lead, stageColor, overlay = false, interactive = false, 
           onPointerDown={(e) => e.stopPropagation()}
           className="absolute right-1.5 top-1.5 z-10 flex flex-col gap-0.5 rounded-lg bg-card/80 p-0.5 opacity-0 shadow-md backdrop-blur-sm transition-opacity group-hover:opacity-100"
         >
-          <IconAction title="Conversar"><MessageCircle className="h-4 w-4" /></IconAction>
+          <IconAction title="Conversar"><ChatCircle className="h-4 w-4" /></IconAction>
           <IconAction title="Agendar"><CalendarPlus className="h-4 w-4" /></IconAction>
-          <IconAction title="Editar"><PencilLine className="h-4 w-4" /></IconAction>
+          <IconAction title="Editar"><PencilSimpleLine className="h-4 w-4" /></IconAction>
           {move && <MoveMenu lead={lead} move={move} />}
         </div>
       )}
@@ -1006,8 +1006,8 @@ function FunilEditor({ pipeline, canDelete, onCancel, onSave, onDelete }: {
             <div key={s.id} className="rounded-xl border border-border bg-muted/25 p-2">
               <div className="flex items-center gap-2">
                 <div className="flex flex-col">
-                  <button onClick={() => move(i, -1)} disabled={i === 0} className="grid h-4 w-5 place-items-center text-muted-foreground hover:text-foreground disabled:opacity-30"><ChevronUp className="h-3.5 w-3.5" /></button>
-                  <button onClick={() => move(i, 1)} disabled={i === draft.length - 1} className="grid h-4 w-5 place-items-center text-muted-foreground hover:text-foreground disabled:opacity-30"><ChevronDown className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => move(i, -1)} disabled={i === 0} className="grid h-4 w-5 place-items-center text-muted-foreground hover:text-foreground disabled:opacity-30"><CaretUp className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => move(i, 1)} disabled={i === draft.length - 1} className="grid h-4 w-5 place-items-center text-muted-foreground hover:text-foreground disabled:opacity-30"><CaretDown className="h-3.5 w-3.5" /></button>
                 </div>
                 <button
                   onClick={() => setColorFor(colorFor === s.id ? null : s.id)}
@@ -1024,7 +1024,7 @@ function FunilEditor({ pipeline, canDelete, onCancel, onSave, onDelete }: {
                     onClick={() => remove(s.id)} disabled={openCount <= 1}
                     className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-danger disabled:opacity-30"
                     title="Remover etapa"
-                  ><Trash2 className="h-4 w-4" /></button>
+                  ><Trash className="h-4 w-4" /></button>
                 ) : (
                   <span className="shrink-0 rounded-md bg-muted px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{KIND_LABEL[s.kind]}</span>
                 )}
@@ -1053,7 +1053,7 @@ function FunilEditor({ pipeline, canDelete, onCancel, onSave, onDelete }: {
             onClick={onDelete} disabled={!canDelete}
             className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-danger transition-colors hover:bg-danger/10 disabled:cursor-not-allowed disabled:opacity-40"
             title={canDelete ? 'Excluir este funil' : 'Precisa de ao menos 1 funil'}
-          ><Trash2 className="h-4 w-4" /> Excluir funil</button>
+          ><Trash className="h-4 w-4" /> Excluir funil</button>
           <div className="flex gap-2">
             <button onClick={onCancel} className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted/60">Cancelar</button>
             <button
@@ -1083,7 +1083,7 @@ function FormSelect({ value, onChange, options, placeholder }: {
         className={cn('flex h-11 w-full items-center justify-between gap-2 rounded-xl border bg-background px-3.5 text-sm outline-none transition-colors', open ? 'border-teal' : 'border-input hover:border-teal/50')}
       >
         <span className={cn('truncate', current ? 'text-foreground' : 'text-muted-foreground/60')}>{current ?? placeholder}</span>
-        <ChevronDown className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform', open && 'rotate-180')} />
+        <CaretDown className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
         <>
@@ -1196,7 +1196,7 @@ function QuickAddLead({ pipelineName, onCancel, onCreate }: {
                   type="button" role="checkbox" aria-checked={cnpj} onClick={() => setCnpj((v) => !v)}
                   className={cn('grid h-[17px] w-[17px] shrink-0 place-items-center rounded-[5px] border-[1.5px] transition-all', cnpj ? 'border-transparent bg-teal' : 'border-input')}
                 >
-                  {cnpj && <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3.5} />}
+                  {cnpj && <Check className="h-3 w-3 text-primary-foreground" />}
                 </button>
                 É PME (tem CNPJ)
               </label>
@@ -1207,7 +1207,7 @@ function QuickAddLead({ pipelineName, onCancel, onCreate }: {
             type="button" onClick={() => setMore((v) => !v)}
             className="flex items-center gap-1 py-0.5 text-[12px] font-medium text-teal transition-opacity hover:opacity-80"
           >
-            <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', more && 'rotate-180')} />
+            <CaretDown className={cn('h-3.5 w-3.5 transition-transform', more && 'rotate-180')} />
             {more ? 'Menos detalhes' : 'Mais detalhes'}
           </button>
         </div>

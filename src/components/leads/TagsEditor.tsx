@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Plus, Check } from 'lucide-react'
+import { X, Plus, Check } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import { TagChip, TAG_PALETTE, useTagColors } from '@/lib/tags'
 
@@ -31,7 +31,7 @@ export function TagsEditor({ tags, onChange, suggestions = [] }: {
         <span key={t} className="group/tag relative inline-flex items-center">
           <TagChip tag={t} />
           <button onClick={() => remove(t)} title="Remover" className="absolute -right-1 -top-1 hidden h-3.5 w-3.5 place-items-center rounded-full bg-background text-muted-foreground ring-1 ring-border transition-colors hover:text-danger group-hover/tag:grid">
-            <X className="h-2.5 w-2.5" strokeWidth={2.5} />
+            <X className="h-2.5 w-2.5" />
           </button>
         </span>
       ))}
@@ -53,7 +53,7 @@ export function TagsEditor({ tags, onChange, suggestions = [] }: {
                 return (
                   <button key={cls} type="button" onMouseDown={(e) => { e.preventDefault(); setColorSel(cls) }} title="Cor da etiqueta"
                     className={cn('grid h-5 w-5 place-items-center rounded-md ring-1 ring-inset ring-white/10 transition', cls.split(' ')[0], sel ? 'scale-110 ring-2 ring-white/60' : 'hover:scale-105')}>
-                    {sel && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                    {sel && <Check className="h-3 w-3 text-white" />}
                   </button>
                 )
               })}

@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { Moon, Sun } from 'lucide-react'
+import { Moon, Sun } from '@phosphor-icons/react'
 
 export function XMark({ className, gid = 'cx' }: { className?: string; gid?: string }) {
   return (

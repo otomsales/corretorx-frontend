@@ -15,14 +15,14 @@
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
-    --primary: 172 66% 42%;
-    --primary-foreground: 168 80% 8%;
+    --primary: 172 72% 34%;
+    --primary-foreground: 0 0% 100%;
     --muted: 210 20% 94%;
     --muted-foreground: 210 12% 42%;
     --border: 214 22% 88%;
     --input: 214 22% 86%;
-    --ring: 172 66% 42%;
-    --teal: 172 66% 42%;
+    --ring: 172 72% 34%;
+    --teal: 172 72% 34%;
     --cyan: 187 82% 44%;
     --danger: 0 74% 52%;
     --success: 152 55% 38%;

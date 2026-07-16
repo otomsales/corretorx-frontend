@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Search, ChevronDown, ChevronUp, ChevronsUpDown, Check, X, Plus, MessageCircle, Activity, ArrowRightLeft, Pencil, Trash2, Eye, Users, Columns3, Tag, GitBranch, UserRound, SlidersHorizontal,
-} from 'lucide-react'
+  MagnifyingGlass, CaretDown, CaretUp, CaretUpDown, Check, X, Plus, ChatCircle, Pulse, ArrowsLeftRight, PencilSimple, Trash, Eye, Users, Columns, Tag, GitBranch, User, SlidersHorizontal,
+} from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { formatPhone } from '@/lib/format'
@@ -55,8 +55,8 @@ function ColumnsMenu({ hidden, toggle }: { hidden: Set<string>; toggle: (k: stri
   return (
     <div className="relative">
       <button onClick={() => setOpen((v) => !v)} className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground">
-        <Columns3 className="h-3.5 w-3.5" /> Colunas
-        <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} />
+        <Columns className="h-3.5 w-3.5" /> Colunas
+        <CaretDown className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
         <>
@@ -68,7 +68,7 @@ function ColumnsMenu({ hidden, toggle }: { hidden: Set<string>; toggle: (k: stri
               return (
                 <button key={c.key} onClick={() => toggle(c.key)} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] text-foreground transition-colors hover:bg-foreground/[0.05]">
                   <span className={cn('grid h-4 w-4 shrink-0 place-items-center rounded-[5px] border-[1.5px] transition-colors', on ? 'border-transparent bg-teal' : 'border-input')}>
-                    {on && <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3.5} />}
+                    {on && <Check className="h-3 w-3 text-primary-foreground" />}
                   </span>
                   <span className="flex-1">{c.label}</span>
                 </button>
@@ -120,7 +120,7 @@ function FilterDropdown({ value, onChange, options, allLabel }: {
         className={cn('flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13px] transition-colors hover:bg-muted/60', active ? 'font-medium text-teal' : 'text-muted-foreground')}
       >
         {current}
-        <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} />
+        <CaretDown className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
         <>
@@ -270,17 +270,17 @@ export default function Leads() {
 
   // menu de botão direito por lead
   const rowMenu = (lead: Lead): MenuItem[] => [
-    { label: 'Conversar', icon: MessageCircle, onClick: () => navigate('/app/chat') },
+    { label: 'Conversar', icon: ChatCircle, onClick: () => navigate('/app/chat') },
     { label: 'Ver detalhe', icon: Eye, onClick: () => openDetail(lead.id) },
-    { label: 'Editar', icon: Pencil, onClick: () => setFormOpen({ lead }) },
+    { label: 'Editar', icon: PencilSimple, onClick: () => setFormOpen({ lead }) },
     { divider: true, label: '' },
-    { label: 'Registrar contato', icon: Activity, onClick: () => setLogLead(lead) },
-    { label: 'Mover etapa', icon: ArrowRightLeft, onClick: () => openBulk('stage', [lead.id]) },
+    { label: 'Registrar contato', icon: Pulse, onClick: () => setLogLead(lead) },
+    { label: 'Mover etapa', icon: ArrowsLeftRight, onClick: () => openBulk('stage', [lead.id]) },
     { label: 'Etiquetar', icon: Tag, onClick: () => openBulk('tag', [lead.id]) },
-    { label: 'Mudar responsável', icon: UserRound, onClick: () => openBulk('owner', [lead.id]) },
+    { label: 'Mudar responsável', icon: User, onClick: () => openBulk('owner', [lead.id]) },
     { label: 'Mudar funil', icon: GitBranch, onClick: () => openBulk('pipeline', [lead.id]) },
     { divider: true, label: '' },
-    { label: 'Excluir', icon: Trash2, danger: true, onClick: () => openBulk('delete', [lead.id]) },
+    { label: 'Excluir', icon: Trash, danger: true, onClick: () => openBulk('delete', [lead.id]) },
   ]
 
   const th = (k: SortKey, label: string, extra = '') => (
@@ -288,8 +288,8 @@ export default function Leads() {
       <button onClick={() => toggleSort(k)} className="group/th inline-flex items-center gap-1 uppercase tracking-wide transition-colors hover:text-foreground">
         {label}
         {sort?.key === k
-          ? (sort.dir === 'asc' ? <ChevronUp className="h-3 w-3 text-teal" /> : <ChevronDown className="h-3 w-3 text-teal" />)
-          : <ChevronsUpDown className="h-3 w-3 opacity-0 transition-opacity group-hover/th:opacity-40" />}
+          ? (sort.dir === 'asc' ? <CaretUp className="h-3 w-3 text-teal" /> : <CaretDown className="h-3 w-3 text-teal" />)
+          : <CaretUpDown className="h-3 w-3 opacity-0 transition-opacity group-hover/th:opacity-40" />}
       </button>
     </th>
   )
@@ -310,7 +310,7 @@ export default function Leads() {
       {/* filtros */}
       <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border/40 bg-card p-1.5">
         <div className="relative flex items-center">
-          <Search className="pointer-events-none absolute left-2.5 h-4 w-4 text-muted-foreground" />
+          <MagnifyingGlass className="pointer-events-none absolute left-2.5 h-4 w-4 text-muted-foreground" />
           <input
             value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar nome ou telefone…"
             className="h-8 w-60 rounded-lg bg-transparent pl-8 pr-3 text-[13px] outline-none placeholder:text-muted-foreground/60"
@@ -351,11 +351,11 @@ export default function Leads() {
         <SelectionToolbar
           count={selCount} total={rows.length} allSelected={allSelected} onSelectAll={selectAll} onClear={clearSel}
           actions={[
-            { label: 'Mover etapa', icon: ArrowRightLeft, onClick: () => openBulk('stage', [...selected]) },
+            { label: 'Mover etapa', icon: ArrowsLeftRight, onClick: () => openBulk('stage', [...selected]) },
             { label: 'Etiquetar', icon: Tag, onClick: () => openBulk('tag', [...selected]) },
-            { label: 'Responsável', icon: UserRound, onClick: () => openBulk('owner', [...selected]) },
+            { label: 'Responsável', icon: User, onClick: () => openBulk('owner', [...selected]) },
             { label: 'Mudar funil', icon: GitBranch, onClick: () => openBulk('pipeline', [...selected]) },
-            { label: 'Excluir', icon: Trash2, danger: true, onClick: () => openBulk('delete', [...selected]) },
+            { label: 'Excluir', icon: Trash, danger: true, onClick: () => openBulk('delete', [...selected]) },
           ]}
         />
       )}
@@ -418,11 +418,11 @@ export default function Leads() {
                   {tableFields.map((f) => <td key={f.id} className="px-2 py-2.5 text-[13px] text-foreground" onClick={(e) => e.stopPropagation()}><CustomFieldInline field={f} value={lead.custom?.[f.id]} onChange={(v) => inlineCustom(lead, f.id, v)} /></td>)}
                   <td className="px-2 py-2.5">
                     <div className="flex items-center justify-end gap-0 opacity-70 transition-opacity group-hover:opacity-100">
-                      <RowAction icon={MessageCircle} label="Conversar" tone="teal" onClick={() => navigate('/app/chat')} />
-                      <RowAction icon={Activity} label="Registrar contato" onClick={() => setLogLead(lead)} />
-                      <RowAction icon={ArrowRightLeft} label="Mover etapa" onClick={() => setMoveLead(lead)} />
-                      <RowAction icon={Pencil} label="Editar" onClick={() => setFormOpen({ lead })} />
-                      <RowAction icon={Trash2} label="Excluir" onClick={() => setDelLead(lead)} />
+                      <RowAction icon={ChatCircle} label="Conversar" tone="teal" onClick={() => navigate('/app/chat')} />
+                      <RowAction icon={Pulse} label="Registrar contato" onClick={() => setLogLead(lead)} />
+                      <RowAction icon={ArrowsLeftRight} label="Mover etapa" onClick={() => setMoveLead(lead)} />
+                      <RowAction icon={PencilSimple} label="Editar" onClick={() => setFormOpen({ lead })} />
+                      <RowAction icon={Trash} label="Excluir" onClick={() => setDelLead(lead)} />
                       <RowAction icon={Eye} label="Ver lead" onClick={() => openDetail(lead.id)} />
                     </div>
                   </td>

@@ -147,6 +147,14 @@ export const FUNIL_LEADS: Lead[] = [
   L('l18', 'Loja do Zé', '11988776655', 'NotreDame', 'PME', 5, 390000, 'WhatsApp', 'u3', 'perdido', 'Preço acima do orçamento'),
 ]
 
+// seed de vidas/beneficiários p/ demonstração
+const _seedLives = FUNIL_LEADS.find((l) => l.id === 'l1')
+if (_seedLives) _seedLives.lives = [
+  { name: 'João Aurora', age: 42, rel: 'titular' },
+  { name: 'Marta Aurora', age: 39, rel: 'conjuge' },
+  { name: 'Pedro Aurora', age: 12, rel: 'filho' },
+]
+
 // foto de perfil do WhatsApp (mock — pravatar simula o profile_pic_url)
 const pic = (n: number) => `https://i.pravatar.cc/100?img=${n}`
 
