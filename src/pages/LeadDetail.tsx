@@ -67,7 +67,7 @@ function FilePreview({ file, onClose }: { file: PreviewFile; onClose: () => void
     : t.startsWith('video/')
       ? <video src={file.url} controls autoPlay className="max-h-[82vh] max-w-full rounded-lg shadow-2xl" />
       : t.startsWith('audio/')
-        ? <div className="rounded-2xl border border-white/10 bg-card p-8 shadow-2xl"><audio src={file.url} controls autoPlay className="w-[420px] max-w-[80vw]" /></div>
+        ? <div className="rounded-2xl border border-border dark:border-white/10 bg-card p-8 shadow-2xl"><audio src={file.url} controls autoPlay className="w-[420px] max-w-[80vw]" /></div>
         : <iframe src={file.url} title={file.name} className={cn('h-[82vh] w-[min(92vw,1000px)] rounded-lg shadow-2xl', (isPdf) && 'bg-white')} />
   return createPortal(
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/85 p-6 backdrop-blur-sm dropdown-in" onClick={onClose}>
@@ -151,7 +151,7 @@ function EditField({ label, value, display, type = 'text', options, creatable, i
             return (
               <>
                 <button type="button" className="fixed inset-0 z-[60]" onClick={cancel} aria-hidden />
-                <div className={cn('dropdown-in absolute left-0 top-full z-[70] mt-1 w-full overflow-hidden rounded-lg border border-white/10 bg-card p-1', SHADOW)}>
+                <div className={cn('dropdown-in absolute left-0 top-full z-[70] mt-1 w-full overflow-hidden rounded-lg border border-border dark:border-white/10 bg-card p-1', SHADOW)}>
                   <div className="mb-1 flex items-center gap-1.5 border-b border-border/50 px-1.5 pb-1.5">
                     <MagnifyingGlass className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55" />
                     <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder={creatable ? 'Buscar ou criar…' : 'Buscar…'} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (canCreate) commit(search.trim()); else if (list.length) commit(list[0].value) } else if (e.key === 'Escape') cancel() }} className="h-6 w-full min-w-0 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/50" />
@@ -194,7 +194,7 @@ function ChipEdit<T extends string>({ value, opts, placeholder, onChange }: {
       {open && (
         <>
           <button type="button" className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
-          <div className={cn('dropdown-in absolute left-0 top-full z-50 mt-1.5 w-40 rounded-lg border border-white/10 bg-card p-1', SHADOW)}>
+          <div className={cn('dropdown-in absolute left-0 top-full z-50 mt-1.5 w-40 rounded-lg border border-border dark:border-white/10 bg-card p-1', SHADOW)}>
             {opts.map((o) => (
               <button key={o.value} onClick={() => { onChange(o.value); setOpen(false) }} className={cn('flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 transition-colors hover:bg-foreground/[0.05]', value === o.value && 'bg-foreground/[0.06]')}>
                 <span className={cn('inline-block rounded px-1.5 py-0.5 text-[10px] font-bold', o.cls)}>{o.label}</span>{value === o.value && <Check className="h-3.5 w-3.5 text-teal" />}
@@ -222,7 +222,7 @@ function FunilSelect({ value, onChange }: { value?: string; onChange: (id: strin
       {open && (
         <>
           <button type="button" className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
-          <div className={cn('dropdown-in absolute left-0 top-full z-50 mt-1.5 w-48 rounded-lg border border-white/10 bg-card p-1', SHADOW)}>
+          <div className={cn('dropdown-in absolute left-0 top-full z-50 mt-1.5 w-48 rounded-lg border border-border dark:border-white/10 bg-card p-1', SHADOW)}>
             {PIPELINES.map((p) => (
               <button key={p.id} onClick={() => { onChange(p.id); setOpen(false) }} className={cn('flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-foreground/[0.05]', cur.id === p.id ? 'font-medium text-teal' : 'text-foreground')}>
                 <span className="flex items-center gap-2"><GitBranch className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />{p.name}</span>
@@ -293,7 +293,7 @@ function ResponsavelEdit({ value, onChange }: { value: string | null; onChange: 
       {open && (
         <>
           <button type="button" className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
-          <div className={cn('dropdown-in absolute left-0 top-full z-50 mt-1.5 w-52 rounded-lg border border-white/10 bg-card p-1', SHADOW)}>
+          <div className={cn('dropdown-in absolute left-0 top-full z-50 mt-1.5 w-52 rounded-lg border border-border dark:border-white/10 bg-card p-1', SHADOW)}>
             {OWNERS.map((w) => (
               <button key={w.id} onClick={() => { onChange(w.id); setOpen(false) }} className={cn('flex w-full items-center gap-2.5 rounded px-2 py-1.5 text-left transition-colors hover:bg-foreground/[0.05]', value === w.id && 'bg-foreground/[0.06]')}>
                 <img src={w.avatar} alt="" className="h-6 w-6 shrink-0 rounded-full object-cover" /><span className="flex-1 truncate text-[13px] text-foreground">{w.name}</span>{value === w.id && <Check className="h-3.5 w-3.5 shrink-0 text-teal" />}
@@ -378,7 +378,7 @@ export default function LeadDetail() {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center p-3 sm:p-6" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeDetail} />
-      <div className={cn('relative flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-background', SHADOW)}>
+      <div className={cn('relative flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-border dark:border-white/10 bg-background', SHADOW)}>
         {/* cabeçalho */}
         <div className="shrink-0 border-b border-border bg-background/95 px-6 py-4">
           <div className="flex items-center gap-4">

@@ -4,6 +4,7 @@ import { IconContext } from '@phosphor-icons/react'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { LeadsProvider } from '@/store/leads'
+import { ImplantacaoProvider } from '@/store/implantacao'
 import { CustomFieldsProvider } from '@/store/customFields'
 import { TagColorsProvider } from '@/lib/tags'
 import LeadDetail from '@/pages/LeadDetail'
@@ -13,7 +14,9 @@ export function AppLayout() {
     <IconContext.Provider value={{ weight: 'duotone' }}>
       <TagColorsProvider>
         <CustomFieldsProvider>
-          <LeadsProvider>{appShell()}</LeadsProvider>
+          <LeadsProvider>
+            <ImplantacaoProvider>{appShell()}</ImplantacaoProvider>
+          </LeadsProvider>
         </CustomFieldsProvider>
       </TagColorsProvider>
     </IconContext.Provider>

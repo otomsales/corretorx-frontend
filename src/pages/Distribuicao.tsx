@@ -249,7 +249,7 @@ export default function Distribuicao() {
                             {assigning === it.id && (
                               <>
                                 <button type="button" className="fixed inset-0 z-40" onClick={() => setAssigning(null)} aria-hidden />
-                                <div className="dropdown-in absolute right-0 top-full z-50 mt-1.5 w-64 rounded-lg border border-white/10 bg-card p-1 text-left shadow-[0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
+                                <div className="dropdown-in absolute right-0 top-full z-50 mt-1.5 w-64 rounded-lg border border-border dark:border-white/10 bg-card p-1 text-left shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
                                   <p className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/60">Atribuir a</p>
                                   {ranked.map((o, i) => (
                                     <button key={o.id} onClick={() => assign(it, o.id)} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-foreground/[0.05]">

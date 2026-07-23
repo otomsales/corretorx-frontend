@@ -6,6 +6,9 @@
 
 @layer base {
   :root {
+    /* Controles nativos (popup do select, date/time picker, scrollbar) seguem o tema */
+    color-scheme: light;
+
     /* Tipografia — Satoshi (UI) + Geist Mono (dados/números) */
     --font-sans: 'Satoshi';
     --font-mono: 'Geist Mono';
@@ -46,6 +49,8 @@
   }
 
   .dark {
+    color-scheme: dark;
+
     /* Dark theme — azul-escuro (navy) da marca CorretorX */
     --background: 224 58% 6%;
     --foreground: 210 34% 94%;
@@ -82,6 +87,13 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans), system-ui, -apple-system, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Popup do <select> nativo: garante contraste (o color-scheme sozinho não basta no Windows/Chrome) */
+  select option,
+  select optgroup {
+    background-color: hsl(var(--card));
+    color: hsl(var(--foreground));
   }
 }
 

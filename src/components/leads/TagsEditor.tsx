@@ -45,7 +45,7 @@ export function TagsEditor({ tags, onChange, suggestions = [] }: {
             placeholder="Nova etiqueta…"
             className="h-[22px] w-32 rounded-md border border-teal bg-background px-2 text-[11px] outline-none focus:ring-[2.5px] focus:ring-teal/20"
           />
-          <div className="absolute left-0 top-full z-[70] mt-1 w-48 rounded-lg border border-white/10 bg-card p-2 shadow-[0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
+          <div className="absolute left-0 top-full z-[70] mt-1 w-48 rounded-lg border border-border dark:border-white/10 bg-card p-2 shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
             {/* swatches de cor */}
             <div className="mb-2 flex flex-wrap gap-1.5">
               {TAG_PALETTE.map((cls) => {

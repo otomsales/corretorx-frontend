@@ -5,6 +5,7 @@ import {
   FileText, Image as ImageIcon, Waveform, Lock, Star, Heartbeat, Wallet, CaretDown, SlidersHorizontal, DotsSixVertical,
   Archive, Trash, Copy, ArrowBendUpLeft, ArrowBendUpRight, Info, Funnel, DeviceMobile,
   Robot, PencilSimple, DotsThree, Snowflake, GraduationCap, ArrowsLeftRight, Prohibit, VideoCamera, Alarm,
+  Crown, Tag, UserCircle, CaretRight, CaretLeft, GitBranch, type Icon,
 } from '@phosphor-icons/react'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent, type DraggableAttributes } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
@@ -14,6 +15,9 @@ import { cn } from '@/lib/utils'
 import { formatPhone, initials, pickAvatar } from '@/lib/format'
 import { STAGE_CATALOG, PIPELINES, OWNERS, lifecycleOf, type Lead } from '@/lib/funil-data'
 import { useLeads } from '@/store/leads'
+import { useImplantacao } from '@/store/implantacao'
+import { VendaGanhaModal, type VendaGanhaData } from '@/components/leads/VendaGanhaModal'
+import { VendaProcessando } from '@/components/leads/VendaProcessando'
 import { TierPill, StatusDot } from '@/components/leads/LeadBadges'
 import { StageCell, OwnerCell, FollowupInlineCell, PipelineCell, InlineText } from '@/components/leads/InlineCell'
 import { useCustomFields } from '@/store/customFields'
@@ -77,7 +81,7 @@ const convStamp = (day: string, t: string) => {
   return d === 'hoje' ? t : d === 'ontem' ? 'Ontem' : day
 }
 
-const MENU_SHADOW = 'shadow-[0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]'
+const MENU_SHADOW = 'shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]'
 
 /** Nível de SLA: só alerta quando a ÚLTIMA msg é do cliente (aguardando nossa resposta) e está velha. */
 const slaLevel = (c: WaConv): 'medium' | 'high' | null => {
@@ -110,22 +114,91 @@ const CONNECTIONS = [
   { id: 'k3', label: 'Renovações', phone: '+55 11 98888-0003' },
 ]
 
-function FGroup({ title, children }: { title: string; children: ReactNode }) {
+type FState = { tags: string[]; owners: string[]; tiers: string[]; stages: string[]; ai: 'all' | 'on' | 'off' }
+type FCatKey = 'ai' | 'stages' | 'tiers' | 'owners' | 'tags'
+
+/** Menu de filtros compacto (estilo Linear): busca no topo → categorias → opções. */
+function FilterMenu({ f, setF, toggleF, clearF, activeCount, allTags, panel }: {
+  f: FState
+  setF: React.Dispatch<React.SetStateAction<FState>>
+  toggleF: (k: 'tags' | 'owners' | 'tiers' | 'stages', v: string) => void
+  clearF: () => void
+  activeCount: number
+  allTags: string[]
+  panel: string
+}) {
+  const [view, setView] = useState<FCatKey | null>(null)
+  const [q, setQ] = useState('')
+
+  const CATS: { key: FCatKey; label: string; icon: Icon; count: number; options: { v: string; l: string }[] }[] = [
+    { key: 'ai', label: 'Atendimento IA', icon: Robot, count: f.ai !== 'all' ? 1 : 0, options: [{ v: 'all', l: 'Todas' }, { v: 'on', l: 'Com IA' }, { v: 'off', l: 'Sem IA' }] },
+    { key: 'stages', label: 'Etapa', icon: GitBranch, count: f.stages.length, options: WA_STAGES.map((s) => ({ v: s, l: STAGE_CATALOG[s]?.label ?? s })) },
+    { key: 'tiers', label: 'Tier', icon: Crown, count: f.tiers.length, options: WA_TIERS.map((t) => ({ v: t.v, l: t.l })) },
+    { key: 'owners', label: 'Vendedor', icon: UserCircle, count: f.owners.length, options: OWNERS.map((o) => ({ v: o.id, l: o.name })) },
+    { key: 'tags', label: 'Etiquetas', icon: Tag, count: f.tags.length, options: allTags.map((t) => ({ v: t, l: t })) },
+  ]
+  const cat = view ? CATS.find((c) => c.key === view)! : null
+  const term = q.trim().toLowerCase()
+  const rows = cat ? cat.options.filter((o) => !term || o.l.toLowerCase().includes(term)) : CATS.filter((c) => !term || c.label.toLowerCase().includes(term))
+  const isOn = (k: FCatKey, v: string) => k === 'ai' ? f.ai === v : (f[k] as string[]).includes(v)
+  const pick = (k: FCatKey, v: string) => k === 'ai' ? setF((p) => ({ ...p, ai: v as FState['ai'] })) : toggleF(k as 'tags' | 'owners' | 'tiers' | 'stages', v)
+
   return (
-    <div className="border-t border-border/40 py-2.5 first:border-0 first:pt-0.5">
-      <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.09em] text-muted-foreground/55">{title}</p>
-      <div className="flex flex-wrap gap-1.5">{children}</div>
+    <div className={cn('absolute right-0 top-full z-50 mt-2 w-[248px] overflow-hidden rounded-xl border border-border p-1 dark:border-white/10', panel, MENU_SHADOW)}>
+      {/* busca */}
+      <div className="mb-1 flex items-center gap-1.5 border-b border-border/50 px-2 pb-1.5">
+        <MagnifyingGlass className="h-3.5 w-3.5 shrink-0 text-muted-foreground/55" />
+        <input
+          autoFocus value={q} onChange={(e) => setQ(e.target.value)}
+          placeholder={cat ? `Buscar ${cat.label.toLowerCase()}…` : 'Filtrar…'}
+          className="h-6 w-full min-w-0 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/50"
+        />
+      </div>
+
+      {cat && (
+        <>
+          <button onClick={() => { setView(null); setQ('') }} className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-[12px] font-semibold text-muted-foreground transition-colors hover:bg-foreground/[0.05] hover:text-foreground">
+            <CaretLeft className="h-3.5 w-3.5" weight="bold" /> {cat.label}
+          </button>
+          <div className="my-1 h-px bg-border/50" />
+        </>
+      )}
+
+      <div className="max-h-[52vh] overflow-y-auto">
+        {!cat
+          ? (rows as typeof CATS).map((c) => (
+            <button key={c.key} onClick={() => { setView(c.key); setQ('') }} className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-foreground/[0.05]">
+              <c.icon className="h-4 w-4 shrink-0 text-muted-foreground/70" />
+              <span className="flex-1 truncate text-[13px] text-foreground">{c.label}</span>
+              {c.count > 0 && <span className="shrink-0 rounded bg-teal px-1.5 text-[10px] font-bold text-primary-foreground">{c.count}</span>}
+              <CaretRight className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+            </button>
+          ))
+          : (rows as { v: string; l: string }[]).map((o) => {
+            const on = isOn(cat.key, o.v)
+            return (
+              <button key={o.v} onClick={() => pick(cat.key, o.v)} className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-foreground/[0.05]">
+                <span className={cn('grid h-[15px] w-[15px] shrink-0 place-items-center border-[1.5px] transition-colors', cat.key === 'ai' ? 'rounded-full' : 'rounded-[4px]', on ? 'border-transparent bg-teal' : 'border-input')}>
+                  {on && <Check className="h-2.5 w-2.5 text-primary-foreground" weight="bold" />}
+                </span>
+                <span className="flex-1 truncate text-[13px] text-foreground">{o.l}</span>
+              </button>
+            )
+          })}
+        {rows.length === 0 && <p className="px-2 py-3 text-center text-[12.5px] text-muted-foreground/60">Nada encontrado.</p>}
+      </div>
+
+      {activeCount > 0 && (
+        <>
+          <div className="my-1 h-px bg-border/50" />
+          <button onClick={() => { clearF(); setView(null); setQ('') }} className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-[12.5px] font-medium text-muted-foreground transition-colors hover:bg-foreground/[0.05] hover:text-danger">
+            <X className="h-3.5 w-3.5 shrink-0" /> Limpar filtros ({activeCount})
+          </button>
+        </>
+      )}
     </div>
   )
 }
-function FPill({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
-  return (
-    <button onClick={onClick} className={cn('inline-flex items-center gap-1 rounded-md px-2 py-1 text-[12px] font-medium transition-colors', on ? 'bg-teal text-primary-foreground shadow-sm' : 'bg-foreground/[0.04] text-muted-foreground ring-1 ring-inset ring-border/50 hover:bg-foreground/[0.08] hover:text-foreground')}>
-      {on && <Check className="h-3 w-3 shrink-0" />}{children}
-    </button>
-  )
-}
-
 function ConversationList({ convs, selectedId, onSelect, onUpdate }: {
   convs: WaConv[]; selectedId: string; onSelect: (id: string) => void; onUpdate: (id: string, patch: Partial<WaConv>) => void
 }) {
@@ -190,7 +263,7 @@ function ConversationList({ convs, selectedId, onSelect, onUpdate }: {
             {connOpen && (
               <>
                 <button type="button" className="fixed inset-0 z-40" onClick={() => setConnOpen(false)} aria-hidden />
-                <div className={cn('absolute right-0 top-full z-50 mt-2 w-60 rounded-xl border border-white/10 p-1', wa.panel, MENU_SHADOW)}>
+                <div className={cn('absolute right-0 top-full z-50 mt-2 w-60 rounded-xl border border-border p-1 dark:border-white/10', wa.panel, MENU_SHADOW)}>
                   <p className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60">Números conectados</p>
                   {CONNECTIONS.map((k) => {
                     const on = activeConns.includes(k.id)
@@ -220,31 +293,10 @@ function ConversationList({ convs, selectedId, onSelect, onUpdate }: {
             {filterOpen && (
               <>
                 <button type="button" className="fixed inset-0 z-40" onClick={() => setFilterOpen(false)} aria-hidden />
-                <div className={cn('absolute right-0 top-full z-50 mt-2 max-h-[74vh] w-[288px] overflow-auto rounded-xl border border-white/10 p-3', wa.panel, MENU_SHADOW)}>
-                  <div className="mb-1 flex items-center justify-between border-b border-border/40 pb-2.5">
-                    <span className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-foreground/80"><Funnel className="h-3.5 w-3.5 text-teal" /> Filtros</span>
-                    {activeCount > 0 && <button onClick={clearF} className="rounded-md px-1.5 py-0.5 text-[11px] font-medium text-teal transition-colors hover:bg-teal/10">Limpar ({activeCount})</button>}
-                  </div>
-                  <FGroup title="Atendimento IA">
-                    {([['all', 'Todas'], ['on', 'Com IA'], ['off', 'Sem IA']] as const).map(([v, l]) => (
-                      <FPill key={v} on={f.ai === v} onClick={() => setF((p) => ({ ...p, ai: v }))}>{l}</FPill>
-                    ))}
-                  </FGroup>
-                  <FGroup title="Etapa">
-                    {WA_STAGES.map((s) => <FPill key={s} on={f.stages.includes(s)} onClick={() => toggleF('stages', s)}>{STAGE_CATALOG[s]?.label ?? s}</FPill>)}
-                  </FGroup>
-                  <FGroup title="Tier">
-                    {WA_TIERS.map((t) => <FPill key={t.v} on={f.tiers.includes(t.v)} onClick={() => toggleF('tiers', t.v)}>{t.l}</FPill>)}
-                  </FGroup>
-                  <FGroup title="Vendedor">
-                    {OWNERS.map((o) => <FPill key={o.id} on={f.owners.includes(o.id)} onClick={() => toggleF('owners', o.id)}>{o.name.split(' ')[0]}</FPill>)}
-                  </FGroup>
-                  {allTags.length > 0 && (
-                    <FGroup title="Etiquetas">
-                      {allTags.map((t) => <FPill key={t} on={f.tags.includes(t)} onClick={() => toggleF('tags', t)}>{t}</FPill>)}
-                    </FGroup>
-                  )}
-                </div>
+                <FilterMenu
+                  f={f} setF={setF} toggleF={toggleF} clearF={clearF} activeCount={activeCount}
+                  allTags={allTags} panel={wa.panel}
+                />
               </>
             )}
           </div>
@@ -378,7 +430,7 @@ function Bubble({ msg, tail, onCtx, replied, onReplyClick, onReact, reactOpen, s
           {reactOpen && (
             <>
               <button type="button" className="fixed inset-0 z-40" onClick={() => setReactOpen(false)} aria-hidden />
-              <div className={cn('absolute bottom-full z-50 mb-1 flex gap-0.5 rounded-full border border-white/10 p-1', me ? 'right-0' : 'left-0', wa.panel, MENU_SHADOW)}>
+              <div className={cn('absolute bottom-full z-50 mb-1 flex gap-0.5 rounded-full border border-border dark:border-white/10 p-1', me ? 'right-0' : 'left-0', wa.panel, MENU_SHADOW)}>
                 {QUICK_REACTIONS.map((e) => <button key={e} onClick={() => { onReact(msg.id, e); setReactOpen(false) }} className="grid h-8 w-8 place-items-center rounded-full text-[18px] transition-transform hover:scale-125">{e}</button>)}
               </div>
             </>
@@ -386,47 +438,11 @@ function Bubble({ msg, tail, onCtx, replied, onReplyClick, onReact, reactOpen, s
         </div>
         {reactions.length > 0 && (
           <div className={cn('-mt-1.5 flex flex-wrap gap-0.5 pl-1', me ? 'justify-end pr-1' : 'justify-start')}>
-            {reactions.map(([e, n]) => <button key={e} onClick={() => onReact(msg.id, e)} className={cn('inline-flex items-center gap-0.5 rounded-full border border-white/10 px-1.5 py-px text-[11px] shadow-sm', wa.panel, msg.myReaction === e && 'ring-1 ring-teal')}>{e}{n > 1 && <span className="text-[10px] text-muted-foreground">{n}</span>}</button>)}
+            {reactions.map(([e, n]) => <button key={e} onClick={() => onReact(msg.id, e)} className={cn('inline-flex items-center gap-0.5 rounded-full border border-border dark:border-white/10 px-1.5 py-px text-[11px] shadow-sm', wa.panel, msg.myReaction === e && 'ring-1 ring-teal')}>{e}{n > 1 && <span className="text-[10px] text-muted-foreground">{n}</span>}</button>)}
           </div>
         )}
       </div>
       {!me && <ReactBtn onOpen={() => setReactOpen(true)} />}
-    </div>
-  )
-}
-
-function VendaGanhaSheet({ lead, onClose, onConfirm }: { lead: Lead; onClose: () => void; onConfirm: (patch: Partial<Lead>) => void }) {
-  const [operadora, setOperadora] = useState(lead.operadora !== '—' ? lead.operadora : '')
-  const [vidas, setVidas] = useState(String(lead.vidas))
-  const [valor, setValor] = useState(lead.value ? (lead.value / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '')
-  const [produto, setProduto] = useState(lead.produtoSugerido ?? '')
-  const [contexto, setContexto] = useState(lead.contexto ?? '')
-  const inputCls = 'h-10 w-full rounded-lg border border-input bg-background px-3 text-[13.5px] outline-none transition-colors focus:border-teal'
-  const confirm = () => {
-    const cents = Math.round((parseFloat(valor.replace(/\./g, '').replace(',', '.')) || 0) * 100)
-    onConfirm({ operadora: operadora.trim() || '—', vidas: Math.max(1, Number(vidas) || 1), value: cents, produtoSugerido: produto.trim() || undefined, contexto: contexto.trim() || undefined })
-  }
-  return (
-    <div className="fixed inset-0 z-[80] grid place-items-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-border/40 bg-card shadow-2xl">
-        <div className="flex items-center gap-2.5 border-b border-border/40 px-5 py-4"><span className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-[15px]">🎉</span><h3 className="text-[15px] font-bold">Registrar venda ganha</h3></div>
-        <div className="space-y-3 p-5">
-          <div className="grid grid-cols-2 gap-3">
-            <label className="block"><span className="mb-1 block text-[12px] text-muted-foreground">Operadora</span><input value={operadora} onChange={(e) => setOperadora(e.target.value)} className={inputCls} /></label>
-            <label className="block"><span className="mb-1 block text-[12px] text-muted-foreground">Vidas</span><input value={vidas} onChange={(e) => setVidas(e.target.value.replace(/\D/g, ''))} inputMode="numeric" className={cn(inputCls, 'font-mono')} /></label>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <label className="block"><span className="mb-1 block text-[12px] text-muted-foreground">Valor / mês (R$)</span><input value={valor} onChange={(e) => setValor(e.target.value)} inputMode="decimal" placeholder="1.846,00" className={cn(inputCls, 'font-mono')} /></label>
-            <label className="block"><span className="mb-1 block text-[12px] text-muted-foreground">Produto</span><input value={produto} onChange={(e) => setProduto(e.target.value)} className={inputCls} /></label>
-          </div>
-          <label className="block"><span className="mb-1 block text-[12px] text-muted-foreground">Contexto do fechamento</span><textarea value={contexto} onChange={(e) => setContexto(e.target.value)} rows={2} className={cn(inputCls, 'h-auto resize-none py-2 leading-relaxed')} /></label>
-        </div>
-        <div className="flex justify-end gap-2 border-t border-border/40 px-5 py-3">
-          <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted/60">Cancelar</button>
-          <button onClick={confirm} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:brightness-110">Confirmar ganho 🎉</button>
-        </div>
-      </div>
     </div>
   )
 }
@@ -473,8 +489,8 @@ function MeetingDialog({ onClose, onCreated }: { onClose: () => void; onCreated:
         <div className="space-y-3 p-5">
           <label className="block"><span className={labelCls}>Título</span><input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} /></label>
           <div className="grid grid-cols-2 gap-2">
-            <label className="block"><span className={labelCls}>Data</span><input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={{ colorScheme: 'dark' }} className={inputCls} /></label>
-            <label className="block"><span className={labelCls}>Hora</span><input type="time" value={time} onChange={(e) => setTime(e.target.value)} style={{ colorScheme: 'dark' }} className={inputCls} /></label>
+            <label className="block"><span className={labelCls}>Data</span><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} /></label>
+            <label className="block"><span className={labelCls}>Hora</span><input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={inputCls} /></label>
           </div>
           <label className="block"><span className={labelCls}>Duração (min)</span><input type="number" min={15} step={15} value={duration} onChange={(e) => setDuration(e.target.value)} className={cn(inputCls, 'font-mono')} /></label>
           <div>
@@ -508,10 +524,12 @@ function ChatThread({ conv, convs, onSend, onPatchMsg, onReact, onForward, onUpd
   onBack: () => void; onTogglePanel: () => void; panelOpen: boolean
 }) {
   const { moveStage, getLead, saveLead } = useLeads()
+  const { createProcess } = useImplantacao()
   const { menu: bubMenu, open: openBub, close: closeBub } = useContextMenu()
   const lead = conv.leadId ? getLead(conv.leadId) : undefined
   const mark = (stage: 'ganho' | 'perdido') => { if (conv.leadId) { moveStage(conv.leadId, stage); toast.success(stage === 'ganho' ? `${conv.name} marcado como Ganho 🎉` : `${conv.name} marcado como Perdido`) } }
   const [ganhaOpen, setGanhaOpen] = useState(false)
+  const [processando, setProcessando] = useState<VendaGanhaData | null>(null)
   const [meetingOpen, setMeetingOpen] = useState(false)
   const [draft, setDraft] = useState('')
   const [attachOpen, setAttachOpen] = useState(false)
@@ -587,7 +605,7 @@ function ChatThread({ conv, convs, onSend, onPatchMsg, onReact, onForward, onUpd
             {hdrMenuOpen && (
               <>
                 <button type="button" className="fixed inset-0 z-40" onClick={() => setHdrMenuOpen(false)} aria-hidden />
-                <div className={cn('absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-white/10 p-1', wa.panel, MENU_SHADOW)}>
+                <div className={cn('absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-border dark:border-white/10 p-1', wa.panel, MENU_SHADOW)}>
                   {conv.leadId && <button onClick={() => { setTransferOpen(true); setHdrMenuOpen(false) }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13.5px] text-foreground transition-colors hover:bg-foreground/[0.06]"><ArrowsLeftRight className="h-4 w-4 text-teal" /> Transferir atendimento</button>}
                   <button onClick={() => { setFrioOpen(true); setHdrMenuOpen(false) }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13.5px] text-foreground transition-colors hover:bg-foreground/[0.06]"><Snowflake className="h-4 w-4 text-teal" /> Marcar cliente frio</button>
                   <button onClick={() => { toast('Conversa enviada como exemplo p/ treinar a X IA'); setHdrMenuOpen(false) }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13.5px] text-foreground transition-colors hover:bg-foreground/[0.06]"><GraduationCap className="h-4 w-4 text-teal" /> Ensinar X IA</button>
@@ -661,7 +679,7 @@ function ChatThread({ conv, convs, onSend, onPatchMsg, onReact, onForward, onUpd
             {attachOpen && (
               <>
                 <button type="button" className="fixed inset-0 z-40" onClick={() => setAttachOpen(false)} aria-hidden />
-                <div className={cn('absolute bottom-full left-0 z-50 mb-2 w-52 overflow-hidden rounded-xl border border-white/10 p-1', wa.panel, MENU_SHADOW)}>
+                <div className={cn('absolute bottom-full left-0 z-50 mb-2 w-52 overflow-hidden rounded-xl border border-border dark:border-white/10 p-1', wa.panel, MENU_SHADOW)}>
                   {ATTACH.map((a) => (
                     <button key={a.label} onClick={() => { toast(`${a.label} — em breve`); setAttachOpen(false) }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[13.5px] text-foreground transition-colors hover:bg-foreground/[0.06]">
                       <a.icon className="h-[18px] w-[18px] text-teal" /> {a.label}
@@ -679,7 +697,7 @@ function ChatThread({ conv, convs, onSend, onPatchMsg, onReact, onForward, onUpd
               {emojiOpen && (
                 <>
                   <button type="button" className="fixed inset-0 z-40" onClick={() => setEmojiOpen(false)} aria-hidden />
-                  <div className={cn('absolute bottom-full left-0 z-50 mb-2 w-72 rounded-xl border border-white/10 p-2', wa.panel, MENU_SHADOW)}>
+                  <div className={cn('absolute bottom-full left-0 z-50 mb-2 w-72 rounded-xl border border-border dark:border-white/10 p-2', wa.panel, MENU_SHADOW)}>
                     <div className="grid max-h-52 grid-cols-8 gap-0.5 overflow-y-auto">
                       {EMOJIS.map((e, i) => (
                         <button key={i} onClick={() => setDraft((d) => d + e)} className="grid h-8 w-8 place-items-center rounded-md text-[19px] leading-none transition-colors hover:bg-foreground/[0.08]">{e}</button>
@@ -700,7 +718,7 @@ function ChatThread({ conv, convs, onSend, onPatchMsg, onReact, onForward, onUpd
               {quickOpen && (
                 <>
                   <button type="button" className="fixed inset-0 z-40" onClick={() => setQuickOpen(false)} aria-hidden />
-                  <div className={cn('absolute bottom-full right-0 z-50 mb-2 w-72 overflow-hidden rounded-xl border border-white/10 p-1', wa.panel, MENU_SHADOW)}>
+                  <div className={cn('absolute bottom-full right-0 z-50 mb-2 w-72 overflow-hidden rounded-xl border border-border dark:border-white/10 p-1', wa.panel, MENU_SHADOW)}>
                     <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70">Mensagens rápidas</p>
                     {QUICK_MSGS.map((q, i) => (
                       <button key={i} onClick={() => { setDraft(q); setQuickOpen(false) }} className="flex w-full rounded-lg px-3 py-2 text-left text-[12.5px] leading-snug text-foreground/90 transition-colors hover:bg-foreground/[0.06]">{q}</button>
@@ -758,7 +776,28 @@ function ChatThread({ conv, convs, onSend, onPatchMsg, onReact, onForward, onUpd
       )}
 
       {/* venda ganha */}
-      {ganhaOpen && lead && <VendaGanhaSheet lead={lead} onClose={() => setGanhaOpen(false)} onConfirm={(patch) => { saveLead({ ...lead, ...patch }); moveStage(lead.id, 'ganho'); setGanhaOpen(false); toast.success('Venda registrada 🎉') }} />}
+      {ganhaOpen && lead && (
+        <VendaGanhaModal
+          lead={lead}
+          onClose={() => setGanhaOpen(false)}
+          onConfirm={(d) => { setGanhaOpen(false); setProcessando(d) }}
+        />
+      )}
+
+      {/* processamento da venda: X girando + barra + confete */}
+      {processando && lead && (
+        <VendaProcessando
+          leadName={lead.name}
+          onDone={() => {
+            const d = processando
+            saveLead({ ...lead, operadora: d.operadora || '—', plano: d.plano || '—', vidas: d.vidas, value: d.valorMensal, contexto: d.observacoes, lives: d.lives.length ? d.lives.map((l) => ({ name: l.name, age: l.age ?? 0, rel: l.rel })) : lead.lives })
+            moveStage(lead.id, 'ganho')
+            createProcess({ leadId: lead.id, leadName: lead.name, ...d })
+            setProcessando(null)
+            toast.success('Venda registrada · processo de implantação criado 🎉')
+          }}
+        />
+      )}
 
       {/* transferir atendimento */}
       {transferOpen && (

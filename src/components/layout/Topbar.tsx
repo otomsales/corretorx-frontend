@@ -10,6 +10,7 @@ const TITLES: Record<string, string> = {
   '/app/chat': 'WhatsApp',
   '/app/chat-interno': 'Chat interno',
   '/app/agenda': 'Agendamentos',
+  '/app/performance': 'Performance',
   '/app/implantacao': 'Implantação',
   '/app/pos-venda': 'Pós-venda',
   '/app/contratos': 'Contratos',

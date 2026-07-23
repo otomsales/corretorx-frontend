@@ -71,7 +71,7 @@ function InlinePick<T extends string>({
           <button type="button" className="fixed inset-0 z-[80] cursor-default" onClick={(e) => { e.stopPropagation(); setPos(null) }} aria-hidden />
           <div
             ref={panelRef} style={{ left: pos.left, top: pos.top, width }}
-            className={cn('dropdown-in fixed z-[90] flex max-h-72 flex-col overflow-hidden rounded-lg border border-white/10 bg-card p-1', SHADOW)}
+            className={cn('dropdown-in fixed z-[90] flex max-h-72 flex-col overflow-hidden rounded-lg border border-border dark:border-white/10 bg-card p-1', SHADOW)}
           >
             {searchable && (
               <div className="mb-1 flex shrink-0 items-center gap-1.5 border-b border-border/50 px-1.5 pb-1.5">
@@ -190,7 +190,7 @@ export function FollowupInlineCell({ lead, onPick }: { lead: Lead; onPick: (days
         <label className="flex items-center gap-1.5 rounded px-2 py-1.5 text-[12px] text-muted-foreground">
           <CalendarDots className="h-3.5 w-3.5 shrink-0 text-teal" />
           <input
-            type="date" style={{ colorScheme: 'dark' }}
+            type="date"
             onChange={(e) => { const v = e.target.value; if (!v) return; const dias = Math.round((new Date(v + 'T00:00:00').getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000); onPick(dias); close() }}
             className="h-7 min-w-0 flex-1 rounded border border-input bg-background px-1.5 text-[12px] text-foreground outline-none focus:border-teal"
           />
@@ -241,7 +241,7 @@ export function InlineText({ value, display, onCommit, type = 'text', placeholde
   if (editing) {
     return (
       <input
-        autoFocus value={val} type={type === 'date' ? 'date' : 'text'} style={type === 'date' ? { colorScheme: 'dark' } : undefined}
+        autoFocus value={val} type={type === 'date' ? 'date' : 'text'}
         inputMode={type === 'number' ? 'numeric' : type === 'currency' ? 'decimal' : undefined}
         onChange={(e) => setVal(type === 'number' ? e.target.value.replace(/\D/g, '') : e.target.value)}
         onBlur={commit}

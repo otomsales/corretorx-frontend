@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import { OWNERS, STAGE_CATALOG } from '@/lib/funil-data'
 import { tagTint } from '@/lib/tags'
 
-const SHADOW = 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]'
+const SHADOW = 'shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]'
 const STAGE_COLOR: Record<string, string> = {
   novo: '--stage-1', atendimento: '--stage-2', qualificado: '--stage-3', proposta: '--stage-4',
   negociacao: '--stage-5', ganho: '--stage-6', perdido: '--stage-7',
@@ -31,7 +31,7 @@ export function ContextMenu({ menu, onClose }: { menu: MenuState; onClose: () =>
   return createPortal(
     <>
       <div className="fixed inset-0 z-[90]" onClick={onClose} onContextMenu={(e) => { e.preventDefault(); onClose() }} aria-hidden />
-      <div style={{ top: y, left: x }} className={cn('dropdown-in fixed z-[100] min-w-[210px] rounded-xl border border-white/10 bg-card p-1.5', SHADOW)}>
+      <div style={{ top: y, left: x }} className={cn('dropdown-in fixed z-[100] min-w-[210px] rounded-xl border border-border dark:border-white/10 bg-card p-1.5', SHADOW)}>
         {menu.items.map((it, i) => it.divider
           ? <div key={i} className="my-1 h-px bg-border/60" />
           : (
@@ -73,7 +73,7 @@ function Shell({ title, subtitle, onClose, children, footer }: { title: string; 
   return (
     <div className="fixed inset-0 z-[80] grid place-items-center p-4" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className={cn('relative flex max-h-[85vh] w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-white/10 bg-card', SHADOW)}>
+      <div className={cn('relative flex max-h-[85vh] w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-border dark:border-white/10 bg-card', SHADOW)}>
         <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
           <div>
             <h3 className="text-[15px] font-bold tracking-tight">{title}</h3>

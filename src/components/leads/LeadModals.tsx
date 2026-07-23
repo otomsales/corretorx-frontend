@@ -5,7 +5,7 @@ import { OWNERS, STAGE_CATALOG, type Lead } from '@/lib/funil-data'
 import { useCustomFields } from '@/store/customFields'
 import { CustomFieldFormInput } from './CustomFields'
 
-const SHADOW = 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]'
+const SHADOW = 'shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]'
 const inputCls = 'h-10 w-full rounded-lg border border-input bg-background px-3 text-[13.5px] outline-none transition-colors placeholder:text-muted-foreground/45 focus:border-teal focus:ring-[2.5px] focus:ring-teal/20'
 
 const OPERADORA_OPTS = ['Amil', 'Bradesco Saúde', 'SulAmérica', 'Hapvida', 'Unimed', 'NotreDame'].map((o) => ({ value: o, label: o }))
@@ -40,7 +40,7 @@ function FormSelect({ value, onChange, options, placeholder }: {
       {open && (
         <>
           <button type="button" className="fixed inset-0 z-[60]" onClick={() => setOpen(false)} aria-hidden />
-          <div className={cn('dropdown-in absolute left-0 top-full z-[70] mt-1 max-h-56 w-full overflow-auto rounded-xl border border-white/10 bg-card p-1.5', SHADOW)}>
+          <div className={cn('dropdown-in absolute left-0 top-full z-[70] mt-1 max-h-56 w-full overflow-auto rounded-xl border border-border dark:border-white/10 bg-card p-1.5', SHADOW)}>
             {options.map((o) => {
               const sel = value === o.value
               return (
@@ -70,7 +70,7 @@ function Shell({ title, subtitle, onClose, children, footer, wide }: {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className={cn('relative flex max-h-[88vh] w-full flex-col rounded-2xl border border-white/10 bg-card', wide ? 'max-w-xl' : 'max-w-md', SHADOW)}>
+      <div className={cn('relative flex max-h-[88vh] w-full flex-col rounded-2xl border border-border dark:border-white/10 bg-card', wide ? 'max-w-xl' : 'max-w-md', SHADOW)}>
         <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
           <div>
             <h3 className="text-[15px] font-bold tracking-tight">{title}</h3>

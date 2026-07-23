@@ -36,6 +36,7 @@ const GROUPS: Group[] = [
       { to: '/app/leads', label: 'Leads' },
       { to: '/app/distribuicao', label: 'Distribuição' },
       { to: '/app/agenda', label: 'Agendamentos' },
+      { to: '/app/performance', label: 'Performance' },
     ],
   },
   {
@@ -111,19 +112,21 @@ function TopItem({ item, end }: { item: Item & { icon: Icon }; end?: boolean }) 
   )
 }
 
-/** Card flutuante do chat interno (portal) — lista de conversas → thread. */
-function ChatInternoCard({ pos, onEnter, onLeave, onClose }: {
-  pos: { top: number; left: number }; onEnter: () => void; onLeave: () => void; onClose: () => void
+/** Card flutuante do chat interno (portal) — lista de conversas → thread. Abre no clique. */
+function ChatInternoCard({ pos, onClose }: {
+  pos: { top: number; left: number }; onClose: () => void
 }) {
   const navigate = useNavigate()
   const [active, setActive] = useState<Contact | null>(null)
   const openFull = () => { onClose(); navigate('/app/chat-interno') }
 
   return createPortal(
-    <div
-      style={{ top: pos.top, left: pos.left }} onMouseEnter={onEnter} onMouseLeave={onLeave}
-      className="dropdown-in fixed z-[100] flex max-h-[78vh] w-[340px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-card shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_16px_32px_-10px_rgba(0,0,0,0.55),0_40px_72px_-16px_rgba(0,0,0,0.7)]"
-    >
+    <>
+      <button type="button" className="fixed inset-0 z-[99] cursor-default" onClick={onClose} aria-hidden />
+      <div
+        style={{ top: pos.top, left: pos.left }}
+        className="dropdown-in fixed z-[100] flex max-h-[78vh] w-[340px] flex-col overflow-hidden rounded-2xl border border-border dark:border-white/10 bg-card shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_16px_32px_-10px_rgba(0,0,0,0.55),0_40px_72px_-16px_rgba(0,0,0,0.7)]"
+      >
       {!active ? (
         <>
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
@@ -181,40 +184,36 @@ function ChatInternoCard({ pos, onEnter, onLeave, onClose }: {
           </div>
         </>
       )}
-    </div>,
+      </div>
+    </>,
     document.body,
   )
 }
 
-/** Item Chat interno — hover destaca avatares + abre o card. */
+/** Item Chat interno — abre o card no CLIQUE. */
 function ChatInternoItem() {
+  const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
   const ref = useRef<HTMLDivElement>(null)
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  const enter = () => {
-    clearTimeout(timer.current)
+  const active = pathname.startsWith('/app/chat-interno')
+  const toggle = () => {
     const r = ref.current?.getBoundingClientRect()
     if (r) setPos({ top: Math.max(12, r.top - 40), left: r.right + 10 })
-    setOpen(true)
+    setOpen((v) => !v)
   }
-  const leave = () => { timer.current = setTimeout(() => setOpen(false), 160) }
 
   return (
-    <div ref={ref} className="relative" onMouseEnter={enter} onMouseLeave={leave}>
-      <NavLink
-        to="/app/chat-interno"
-        className={({ isActive }) => cn('flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[14px] transition-colors', isActive || open ? 'bg-foreground/[0.07] font-semibold text-foreground' : 'font-medium text-foreground/60 hover:bg-foreground/[0.04] hover:text-foreground')}
+    <div ref={ref} className="relative">
+      <button
+        onClick={toggle}
+        className={cn('flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[14px] transition-colors', active || open ? 'bg-foreground/[0.07] font-semibold text-foreground' : 'font-medium text-foreground/60 hover:bg-foreground/[0.04] hover:text-foreground')}
       >
-        {({ isActive }) => (
-          <>
-            <ChatsCircle className={cn('h-[18px] w-[18px] shrink-0', isActive || open ? 'text-[hsl(var(--brand-soft-accent))]' : 'text-muted-foreground/70')} />
-            <span className="flex-1 truncate">Chat interno</span>
-            <AvatarStack urls={TEAM_AVATARS} active={open} />
-          </>
-        )}
-      </NavLink>
-      {open && <ChatInternoCard pos={pos} onEnter={() => clearTimeout(timer.current)} onLeave={leave} onClose={() => setOpen(false)} />}
+        <ChatsCircle className={cn('h-[18px] w-[18px] shrink-0', active || open ? 'text-[hsl(var(--brand-soft-accent))]' : 'text-muted-foreground/70')} />
+        <span className="flex-1 truncate text-left">Chat interno</span>
+        <AvatarStack urls={TEAM_AVATARS} active={open} />
+      </button>
+      {open && <ChatInternoCard pos={pos} onClose={() => setOpen(false)} />}
     </div>
   )
 }
@@ -286,8 +285,8 @@ export function Sidebar() {
       {/* Navegação */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3">
         <TopItem item={HOME} end />
-        <ChatInternoItem />
         <TopItem item={WHATSAPP} />
+        <ChatInternoItem />
 
         {GROUPS.map((g) => {
           const hasActive = g.items.some((i) => pathname === i.to || pathname.startsWith(i.to + '/'))

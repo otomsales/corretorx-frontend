@@ -363,7 +363,7 @@ export default function Funil() {
             {menuOpen && (
               <>
                 <button className="fixed inset-0 z-40 cursor-default" onClick={() => setMenuOpen(false)} aria-hidden />
-                <div className="absolute left-0 top-full z-50 mt-1 w-64 overflow-hidden rounded-xl border border-white/10 bg-card p-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
+                <div className="absolute left-0 top-full z-50 mt-1 w-64 overflow-hidden rounded-xl border border-border dark:border-white/10 bg-card p-1.5 shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
                   <p className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Funis</p>
                   {pipelines.map((p) => {
                     const count = leads.filter((l) => (l.pipelineId ?? INITIAL_PIPELINES[0].id) === p.id).length
@@ -443,13 +443,13 @@ export default function Funil() {
           <div className="flex items-center gap-1.5 pl-1">
             <input
               type="date" value={fFrom} onChange={(e) => setFFrom(e.target.value)}
-              style={{ colorScheme: 'dark' }}
+             
               className="h-8 rounded-lg border border-border bg-background px-2 text-[12.5px] text-foreground outline-none focus:border-teal"
             />
             <span className="text-xs text-muted-foreground">até</span>
             <input
               type="date" value={fTo} onChange={(e) => setFTo(e.target.value)}
-              style={{ colorScheme: 'dark' }}
+             
               className="h-8 rounded-lg border border-border bg-background px-2 text-[12.5px] text-foreground outline-none focus:border-teal"
             />
           </div>
@@ -609,7 +609,7 @@ function FilterDropdown({ value, onChange, options, allLabel }: {
       {open && (
         <>
           <button type="button" className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-hidden />
-          <div className="dropdown-in absolute left-0 top-full z-50 mt-1.5 max-h-72 w-52 overflow-auto rounded-xl border border-white/10 bg-card p-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
+          <div className="dropdown-in absolute left-0 top-full z-50 mt-1.5 max-h-72 w-52 overflow-auto rounded-xl border border-border dark:border-white/10 bg-card p-1.5 shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
             {opts.map((o) => {
               const sel = value === o.value
               const isReal = sel && o.value !== '' // teal só p/ filtro real (não p/ "Todos")
@@ -774,7 +774,7 @@ function MoveMenu({ lead, move }: { lead: Lead; move: MoveCtx }) {
       ><ArrowsLeftRight className="h-4 w-4" /></button>
       {open && createPortal(
         <div className="fixed inset-0 z-[60]" onClick={() => setOpen(false)} onPointerDown={(e) => e.stopPropagation()}>
-          <div className="absolute w-52 rounded-xl border border-white/10 bg-card p-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]" style={{ top: pos.top, left: pos.left }} onClick={(e) => e.stopPropagation()}>
+          <div className="absolute w-52 rounded-xl border border-border dark:border-white/10 bg-card p-1.5 shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]" style={{ top: pos.top, left: pos.left }} onClick={(e) => e.stopPropagation()}>
             <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Mudar etapa</p>
             {move.stages.map((s) => (
               <button
@@ -1088,7 +1088,7 @@ function FormSelect({ value, onChange, options, placeholder }: {
       {open && (
         <>
           <button type="button" className="fixed inset-0 z-[60]" onClick={() => setOpen(false)} aria-hidden />
-          <div className="dropdown-in absolute left-0 top-full z-[70] mt-1 max-h-56 w-full overflow-auto rounded-xl border border-white/10 bg-card p-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
+          <div className="dropdown-in absolute left-0 top-full z-[70] mt-1 max-h-56 w-full overflow-auto rounded-xl border border-border dark:border-white/10 bg-card p-1.5 shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
             {options.map((o) => {
               const sel = value === o.value
               return (
@@ -1155,7 +1155,7 @@ function QuickAddLead({ pipelineName, onCancel, onCreate }: {
       <div className="fixed inset-0 z-40" onClick={onCancel} aria-hidden />
       <div
         role="dialog" aria-label="Novo lead" onKeyDown={onKey}
-        className="dropdown-in absolute right-0 top-full z-50 mt-2 w-[380px] origin-top-right overflow-hidden rounded-xl border border-white/10 bg-card shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]"
+        className="dropdown-in absolute right-0 top-full z-50 mt-2 w-[380px] origin-top-right overflow-hidden rounded-xl border border-border dark:border-white/10 bg-card shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]"
       >
         <div className="flex items-center justify-between px-4 pb-2.5 pt-3.5">
           <div className="flex items-baseline gap-1.5">

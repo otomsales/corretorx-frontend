@@ -143,6 +143,18 @@ export const FUNIL_LEADS: Lead[] = [
   L('l16', 'Colégio Horizonte', '11911009988', 'Amil', 'Empresarial', 28, 2680000, 'Meta Ads', 'u1', 'ganho'),
   L('l17', 'Restaurante Sabor', '11900998877', 'Hapvida', 'PME', 7, 548000, 'Site', 'u2', 'ganho'),
 
+  L('l19', 'Academia Corpo & Ação', '11955443300', 'SulAmérica', 'PME', 14, 1120000, 'Indicação', 'u3', 'ganho'),
+  L('l20', 'Contabilidade Prisma', '11944332200', 'Unimed', 'Empresarial', 9, 890000, 'Site', 'u4', 'ganho'),
+  L('l21', 'Auto Peças Guerra', '11933221144', 'Amil', 'PME', 11, 968000, 'Meta Ads', 'u1', 'ganho'),
+  L('l22', 'Dra. Helena Muniz', '11922110055', 'Bradesco Saúde', 'Individual', 2, 296000, 'Indicação', 'u2', 'ganho'),
+  L('l23', 'Transportadora Rota Sul', '11911223344', 'SulAmérica', 'Empresarial', 21, 1932000, 'Site', 'u3', 'ganho'),
+  L('l24', 'Buffet Encanto', '11900112233', 'Hapvida', 'PME', 6, 474000, 'WhatsApp', 'u4', 'ganho'),
+  L('l25', 'Marcelo Tavares', '11988221100', 'Unimed', 'Individual', 1, 152000, 'Meta Ads', 'u1', 'ganho'),
+  L('l26', 'Serralheria Ferro & Arte', '11977330099', 'NotreDame', 'PME', 8, 636000, 'Indicação', 'u2', 'ganho'),
+  L('l27', 'Colégio Semear', '11966440088', 'Amil', 'Empresarial', 19, 1786000, 'Site', 'u3', 'ganho'),
+  L('l28', 'Patrícia Nogueira', '11955550077', 'Bradesco Saúde', 'Individual', 3, 384000, 'WhatsApp', 'u4', 'ganho'),
+  L('l29', 'Distribuidora Vega', '11944660066', 'SulAmérica', 'PME', 13, 1094000, 'Meta Ads', 'u1', 'ganho'),
+
   // Perdido
   L('l18', 'Loja do Zé', '11988776655', 'NotreDame', 'PME', 5, 390000, 'WhatsApp', 'u3', 'perdido', 'Preço acima do orçamento'),
 ]
@@ -175,7 +187,18 @@ const ENRICH: Record<string, Partial<Lead>> = {
   l13: { tier: 'bronze', city: 'Diadema, SP', noContactHours: 120, entryDaysAgo: 14, followupInDays: -15 },
   l14: { tier: 'diamante', city: 'São Paulo, SP', tags: ['Alto ticket'], noContactHours: 2, entryDaysAgo: 16, cnpj: true, avatarUrl: pic(3), followupInDays: 2 },
   l15: { tier: 'ouro', city: 'Jundiaí, SP', noContactHours: 15, entryDaysAgo: 15, avatarUrl: pic(48), followupInDays: 15 },
-  l16: { tier: 'ouro', city: 'São Paulo, SP', tags: ['Fechado'], noContactHours: 1, entryDaysAgo: 20, cnpj: true, avatarUrl: pic(31) },
-  l17: { tier: 'prata', city: 'Barueri, SP', noContactHours: 3, entryDaysAgo: 22, avatarUrl: pic(68) },
+  l16: { tier: 'ouro', city: 'São Paulo, SP', tags: ['Fechado'], noContactHours: 1, entryDaysAgo: 8, cnpj: true, avatarUrl: pic(31) },
+  l17: { tier: 'prata', city: 'Barueri, SP', noContactHours: 3, entryDaysAgo: 20, avatarUrl: pic(68) },
+  l19: { tier: 'ouro', city: 'Santo André, SP', noContactHours: 5, entryDaysAgo: 11, cnpj: true, avatarUrl: pic(26) },
+  l20: { tier: 'prata', city: 'São Paulo, SP', noContactHours: 8, entryDaysAgo: 24, cnpj: true, avatarUrl: pic(60) },
+  l21: { tier: 'ouro', city: 'Guarulhos, SP', noContactHours: 4, entryDaysAgo: 14, cnpj: true, avatarUrl: pic(11) },
+  l22: { tier: 'bronze', city: 'São Paulo, SP', noContactHours: 9, entryDaysAgo: 19, avatarUrl: pic(31) },
+  l23: { tier: 'diamante', city: 'Curitiba, PR', noContactHours: 2, entryDaysAgo: 27, cnpj: true, avatarUrl: pic(53) },
+  l24: { tier: 'prata', city: 'Osasco, SP', noContactHours: 12, entryDaysAgo: 10, cnpj: true, avatarUrl: pic(64) },
+  l25: { tier: 'bronze', city: 'Campinas, SP', noContactHours: 30, entryDaysAgo: 16 },
+  l26: { tier: 'prata', city: 'Diadema, SP', noContactHours: 7, entryDaysAgo: 22, cnpj: true, avatarUrl: pic(14) },
+  l27: { tier: 'ouro', city: 'Santos, SP', noContactHours: 5, entryDaysAgo: 31, cnpj: true, avatarUrl: pic(58) },
+  l28: { tier: 'bronze', city: 'Niterói, RJ', noContactHours: 18, entryDaysAgo: 13, avatarUrl: pic(24) },
+  l29: { tier: 'ouro', city: 'Sorocaba, SP', noContactHours: 6, entryDaysAgo: 25, cnpj: true, avatarUrl: pic(50) },
 }
 for (const l of FUNIL_LEADS) Object.assign(l, ENRICH[l.id])

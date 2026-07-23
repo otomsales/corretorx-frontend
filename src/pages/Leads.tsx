@@ -61,7 +61,7 @@ function ColumnsMenu({ hidden, toggle }: { hidden: Set<string>; toggle: (k: stri
       {open && (
         <>
           <button type="button" className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-hidden />
-          <div className="dropdown-in absolute right-0 top-full z-50 mt-1.5 w-56 rounded-xl border border-white/10 bg-card p-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
+          <div className="dropdown-in absolute right-0 top-full z-50 mt-1.5 w-56 rounded-xl border border-border dark:border-white/10 bg-card p-1.5 shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
             <p className="px-2.5 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/60">Colunas visíveis</p>
             {COLS.map((c) => {
               const on = !hidden.has(c.key)
@@ -125,7 +125,7 @@ function FilterDropdown({ value, onChange, options, allLabel }: {
       {open && (
         <>
           <button type="button" className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-hidden />
-          <div className="dropdown-in absolute left-0 top-full z-50 mt-1.5 max-h-72 w-52 overflow-auto rounded-xl border border-white/10 bg-card p-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
+          <div className="dropdown-in absolute left-0 top-full z-50 mt-1.5 max-h-72 w-52 overflow-auto rounded-xl border border-border dark:border-white/10 bg-card p-1.5 shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
             {opts.map((o) => {
               const sel = value === o.value
               const isReal = sel && o.value !== ''
@@ -324,9 +324,9 @@ export default function Leads() {
         <FilterDropdown value={fPeriod} onChange={setFPeriod} options={PERIOD_OPTS} allLabel="Todo período" />
         {fPeriod === 'custom' && (
           <div className="flex items-center gap-1.5 pl-1">
-            <input type="date" value={fFrom} onChange={(e) => setFFrom(e.target.value)} style={{ colorScheme: 'dark' }} className="h-8 rounded-lg border border-border bg-background px-2 text-[12.5px] text-foreground outline-none focus:border-teal" />
+            <input type="date" value={fFrom} onChange={(e) => setFFrom(e.target.value)} className="h-8 rounded-lg border border-border bg-background px-2 text-[12.5px] text-foreground outline-none focus:border-teal" />
             <span className="text-xs text-muted-foreground">até</span>
-            <input type="date" value={fTo} onChange={(e) => setFTo(e.target.value)} style={{ colorScheme: 'dark' }} className="h-8 rounded-lg border border-border bg-background px-2 text-[12.5px] text-foreground outline-none focus:border-teal" />
+            <input type="date" value={fTo} onChange={(e) => setFTo(e.target.value)} className="h-8 rounded-lg border border-border bg-background px-2 text-[12.5px] text-foreground outline-none focus:border-teal" />
           </div>
         )}
         {hasFilters && (

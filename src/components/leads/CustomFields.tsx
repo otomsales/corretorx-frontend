@@ -69,7 +69,7 @@ export function CustomFieldFormInput({ field, value, onChange }: {
         <input
           type={field.type === 'date' ? 'date' : field.type === 'number' || field.type === 'currency' ? 'text' : 'text'}
           inputMode={field.type === 'number' ? 'numeric' : field.type === 'currency' ? 'decimal' : undefined}
-          style={field.type === 'date' ? { colorScheme: 'dark' } : undefined}
+         
           value={sVal} onChange={(e) => onChange(e.target.value)} className={base}
         />
       )}

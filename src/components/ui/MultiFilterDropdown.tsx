@@ -22,7 +22,7 @@ export function MultiFilterDropdown({ values, onChange, options, allLabel }: {
       {open && (
         <>
           <button type="button" className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-hidden />
-          <div className="dropdown-in absolute left-0 top-full z-50 mt-1.5 max-h-72 w-56 overflow-auto rounded-xl border border-white/10 bg-card p-1.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
+          <div className="dropdown-in absolute left-0 top-full z-50 mt-1.5 max-h-72 w-56 overflow-auto rounded-xl border border-border dark:border-white/10 bg-card p-1.5 shadow-[0_1px_2px_-1px_rgba(0,0,0,0.06),0_8px_16px_-6px_rgba(0,0,0,0.10),0_24px_48px_-16px_rgba(0,0,0,0.14)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_2px_4px_-1px_rgba(0,0,0,0.4),0_12px_24px_-8px_rgba(0,0,0,0.5),0_32px_64px_-16px_rgba(0,0,0,0.7)]">
             <button
               type="button" onClick={() => onChange([])}
               className={cn('flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-left text-[13px] transition-colors', !active ? 'font-medium text-teal' : 'text-foreground hover:bg-foreground/[0.05]')}
