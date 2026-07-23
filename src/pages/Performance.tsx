@@ -243,6 +243,354 @@ function PeriodoSelect({ tipo, onTipo, custom, onCustom }: {
   )
 }
 
+
+/* ================= VARIANTE B — composição no padrão chat-wave =================
+   Coluna única de blocos full-width. O único grid de 2 colunas é o interior do
+   card do vendedor (rail 300px + área elástica). Tokens seguem o CorretorX. */
+
+function KpiB({ label, valor, sub, tone }: { label: string; valor: string; sub?: ReactNode; tone?: string }) {
+  return (
+    <div className="rounded-lg border border-border/40 bg-foreground/[0.015] px-3 py-3">
+      <span className={cn('block truncate', MICRO)}>{label}</span>
+      <p className={cn('mt-1.5 font-mono text-[19px] font-bold leading-none tabular-nums', tone ?? 'text-foreground')}>{valor}</p>
+      {sub && <p className="mt-1 truncate text-[11px] leading-none text-muted-foreground">{sub}</p>}
+    </div>
+  )
+}
+
+/** Card de destaque do rail (comissão / esteira) — os dois maiores números da tela. */
+function DestaqueB({ label, valor, sub, tone, borda }: { label: string; valor: string; sub?: string; tone: string; borda: string }) {
+  return (
+    <div className={cn('rounded-lg border bg-card/60 px-3 py-2.5', borda)}>
+      <span className={cn('block truncate', MICRO)}>{label}</span>
+      <p className={cn('mt-1 font-mono text-[26px] font-black leading-none tabular-nums', tone)}>{valor}</p>
+      {sub && <p className="mt-1 truncate text-[11px] leading-none text-muted-foreground">{sub}</p>}
+    </div>
+  )
+}
+
+/** Tabela de contratos (esteira / pagas) — mesma anatomia, muda só o header. */
+function TabelaContratosB({ titulo, subtitulo, linhas, totalTom, comissaoPorLead, vazio, openDetail }: {
+  titulo: string; subtitulo: string; linhas: ImplProcess[]; totalTom: string
+  comissaoPorLead: Map<string, number>; vazio: string; openDetail: (id: string) => void
+}) {
+  const total = linhas.reduce((s, p) => s + (p.valorMensal ?? 0), 0)
+  return (
+    <div className={cn('overflow-hidden rounded-xl', GLASS)}>
+      <div className="flex items-center justify-between gap-2 border-b border-border/40 px-4 py-3">
+        <h2 className={TITULO}>
+          {titulo}
+          <span className="ml-1.5 text-[11px] font-normal normal-case tracking-normal text-muted-foreground/60">· {subtitulo}</span>
+        </h2>
+        <span className={cn('font-mono text-[12px] font-bold tabular-nums', totalTom)}>{linhas.length} · {brl(total)}</span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[620px] table-auto border-collapse text-left">
+          <thead>
+            <tr className={cn('border-b border-border/40 bg-muted/25', MICRO)}>
+              <th className="px-2.5 py-2.5">Cliente</th>
+              <th className="px-2.5 py-2.5">Operadora</th>
+              <th className="px-2.5 py-2.5">Venda</th>
+              <th className="px-2.5 py-2.5">Vigência</th>
+              <th className="px-2.5 py-2.5 text-right">Valor/mês</th>
+              <th className="px-2.5 py-2.5 text-right">Comissão</th>
+              <th className="px-2.5 py-2.5">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/40">
+            {linhas.map((p) => {
+              const com = comissaoPorLead.get(p.leadId)
+              return (
+                <tr key={p.id} className="transition-colors hover:bg-foreground/[0.02]">
+                  <td className="px-2.5 py-2">
+                    <button onClick={() => openDetail(p.leadId)} title={p.leadName} className="max-w-[190px] truncate text-[13px] font-semibold text-foreground transition-colors hover:text-teal">{p.leadName}</button>
+                  </td>
+                  <td className="whitespace-nowrap px-2.5 py-2 text-[12.5px] text-muted-foreground">{p.operadora}</td>
+                  <td className="whitespace-nowrap px-2.5 py-2 text-[12.5px] tabular-nums text-muted-foreground">{fmtDia(new Date(p.dataVenda + 'T00:00:00'))}</td>
+                  <td className="whitespace-nowrap px-2.5 py-2 text-[12.5px] tabular-nums text-muted-foreground">{p.vigencia ? fmtDia(new Date(p.vigencia + 'T00:00:00')) : '—'}</td>
+                  <td className="whitespace-nowrap px-2.5 py-2 text-right font-mono text-[12.5px] font-semibold tabular-nums text-foreground">{brl(p.valorMensal ?? 0)}</td>
+                  <td className="whitespace-nowrap px-2.5 py-2 text-right font-mono text-[12.5px] font-bold tabular-nums text-success">{com != null ? brl(com) : <span className="font-sans text-muted-foreground/50">—</span>}</td>
+                  <td className="whitespace-nowrap px-2.5 py-2"><StatusImpl stage={p.stage} /></td>
+                </tr>
+              )
+            })}
+            {linhas.length === 0 && (
+              <tr><td colSpan={7} className="px-2.5 py-10 text-center text-[13px] text-muted-foreground/60">{vazio}</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function VarianteB({ d }: { d: any }) {
+  return (
+    <div className="space-y-4">
+      {/* ---- card do vendedor: rail 300px + área elástica ---- */}
+      <div className={cn('overflow-hidden rounded-xl', GLASS)}>
+        <div className="grid grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)]">
+
+          {/* rail */}
+          <div className="flex flex-col gap-4 border-b border-border/40 bg-foreground/[0.02] p-5 lg:border-b-0 lg:border-r">
+            <div className="flex flex-col items-center gap-2.5 text-center">
+              {d.vendedorAtual ? (
+                <div className="relative">
+                  <div className="rounded-full bg-gradient-to-br from-[hsl(var(--teal))] to-cyan-400 p-[2px]">
+                    <img src={d.vendedorAtual.avatar} alt="" className="h-24 w-24 rounded-full object-cover" />
+                  </div>
+                  {d.minhaPos > 0 && (
+                    <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded bg-teal px-1 font-mono text-[11px] font-bold tabular-nums text-primary-foreground">{d.minhaPos}º</span>
+                  )}
+                </div>
+              ) : (
+                <div className="flex -space-x-2">
+                  {OWNERS.map((o) => <img key={o.id} src={o.avatar} alt="" className="h-9 w-9 rounded-full object-cover ring-2 ring-card" />)}
+                </div>
+              )}
+              <div>
+                <p className="text-[16px] font-bold leading-tight text-foreground">{d.vendedorAtual ? d.vendedorAtual.name : 'Equipe'}</p>
+                <p className="text-[12px] text-muted-foreground">
+                  {d.vendedorAtual ? `Corretor${d.minhaPos === 1 ? ' · líder do ciclo' : ''}` : `${OWNERS.length} corretores`}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border/40 bg-card/60 px-3 py-2 text-center text-[11.5px] text-muted-foreground">
+              <span className="font-mono font-bold text-foreground">{d.qtdAbertos}</span> leads ·{' '}
+              <span className="font-mono font-bold text-foreground">{d.qtdVendas}</span> vendas ·{' '}
+              <span className="font-mono font-bold text-teal">{brl(d.receita)}</span>
+            </div>
+
+            <div>
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <span className={MICRO}>Meta {d.escopo}</span>
+                <span className={cn('font-mono text-[13px] font-bold tabular-nums', d.pctMeta >= 100 ? 'text-teal' : 'text-muted-foreground')}>{d.pctMeta}%</span>
+              </div>
+              <div className="relative h-2 w-full overflow-hidden rounded-full bg-foreground/[0.06]">
+                <div className="h-full rounded-full bg-gradient-to-r from-[hsl(var(--teal))] to-cyan-400" style={{ width: `${d.posDe(d.receita)}%` }} />
+                <div className="absolute inset-y-0 left-0 rounded-full bg-success/85" style={{ width: `${d.posDe(d.receitaConfirmada)}%` }} title={`confirmado: ${brl(d.receitaConfirmada)}`} />
+              </div>
+              <p className="mt-1 text-[11px] text-muted-foreground">faixa <span className="font-semibold text-teal">{d.faixa.label}</span> · confirmado {brl(d.receitaConfirmada)}</p>
+            </div>
+
+            <DestaqueB label="Comissão projetada" valor={brl(d.comissao)} sub={`${brl(d.comissaoConfirmada)} confirmada`} tone="text-teal" borda="border-teal/25" />
+            <DestaqueB label="Em implantação" valor={brl(d.esteira.valor)} sub={`${d.esteira.qtd} proposta${d.esteira.qtd === 1 ? '' : 's'} na esteira`} tone="text-warning" borda="border-warning/25" />
+
+            <div>
+              <span className={cn('mb-2 block', MICRO)}>Precisa de atenção</span>
+              <div className="flex flex-col items-start gap-1.5">
+                <Alerta n={d.retornos.atrasados.length} label={`retorno${d.retornos.atrasados.length === 1 ? '' : 's'} atrasado${d.retornos.atrasados.length === 1 ? '' : 's'}`} tone="danger" onClick={() => d.setAlertaModal({ titulo: 'Retornos atrasados', itens: d.retornos.atrasados })} />
+                <Alerta n={d.retornos.hoje.length} label={`retorno${d.retornos.hoje.length === 1 ? '' : 's'} hoje`} tone="warning" onClick={() => d.setAlertaModal({ titulo: 'Retornos de hoje', itens: d.retornos.hoje })} />
+                <Alerta n={d.esteira.pendencias} label={`pendência${d.esteira.pendencias === 1 ? '' : 's'} na esteira`} tone="danger" onClick={() => d.setAlertaModal({ titulo: 'Pendências na esteira', itens: d.esteira.pendLeads })} />
+                <Alerta n={d.parados} label="parados +7d" tone="muted" onClick={() => d.setAlertaModal({ titulo: 'Leads parados há +7 dias', itens: d.paradosLeads })} />
+              </div>
+            </div>
+          </div>
+
+          {/* área elástica: KPIs + funil */}
+          <div className="flex flex-col gap-4 p-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">
+              <KpiB label="Receita vendida" valor={brl(d.receita)} tone="text-teal" sub={`${d.qtdVendas} venda${d.qtdVendas === 1 ? '' : 's'}`} />
+              <KpiB label="Confirmada" valor={brl(d.receitaConfirmada)} tone="text-success" sub={d.emAberto > 0 ? `${brl(d.emAberto)} em aberto` : 'tudo confirmado'} />
+              <KpiB label="Vendas" valor={String(d.qtdVendas)} sub={`${d.vidas} vidas`} />
+              <KpiB label="Ticket médio" valor={d.qtdVendas ? brl(d.ticket) : '—'} sub={d.qtdVendas ? `${brl(d.porVida)}/vida` : 'sem vendas'} />
+              <KpiB
+                label="Conversão" valor={d.conversao ? `${d.conversao}%` : '—'}
+                sub={d.delta !== null ? (
+                  <span className={cn('inline-flex items-center gap-0.5', d.delta >= 0 ? 'text-success' : 'text-danger')}>
+                    {d.delta >= 0 ? <CaretUp className="h-3 w-3" weight="bold" /> : <CaretDown className="h-3 w-3" weight="bold" />}
+                    {Math.abs(d.delta)}% vs anterior
+                  </span>
+                ) : 'sem base anterior'}
+              />
+              <KpiB label="Perdidos" valor={String(d.perdidos)} tone={d.perdidos ? 'text-danger' : undefined} sub={`${d.taxaPerda}% dos fechados`} />
+              <KpiB label="Ciclo de venda" valor={d.cicloMedio !== null ? `${d.cicloMedio}d` : '—'} sub="entrada→ganho" />
+            </div>
+
+            <div>
+              <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className={TITULO}>Funil aberto</h2>
+                <span className="text-[11px] tabular-nums text-muted-foreground">
+                  {d.funilTotal} leads · {brl(d.pipeline)} em oportunidades ·{' '}
+                  <span className={d.paradoCritico ? 'text-danger' : ''}>{d.parados} parados +7d</span>
+                </span>
+              </div>
+              <p className="mb-3 text-[11px] text-muted-foreground/70">Estoque de agora — não muda com o período.</p>
+              <div className="flex flex-col gap-1.5">
+                {d.funil.map((f: any, i: number) => (
+                  <div key={f.id}>
+                    {i > 0 && f.avanco !== null && (
+                      <p className="mb-0.5 pl-[100px] text-[10.5px] tabular-nums text-muted-foreground/60">↓ {f.avanco}% da etapa anterior</p>
+                    )}
+                    <button
+                      type="button"
+                      disabled={f.qtd === 0}
+                      onClick={f.qtd > 0 ? () => d.setAlertaModal({ titulo: `Funil · ${f.label}`, itens: f.leads.map((l: Lead) => ({ lead: l, nota: d.notaFunil(l), valor: l.valorEstimado ?? l.value ?? 0 })) }) : undefined}
+                      className={cn('flex w-full items-center gap-3', f.qtd === 0 && 'cursor-default opacity-45')}
+                    >
+                      <span className="w-[88px] shrink-0 truncate text-right text-[11.5px] text-muted-foreground">{f.label}</span>
+                      <span className="relative h-7 flex-1 overflow-hidden rounded-md bg-foreground/[0.06]">
+                        <span
+                          className="flex h-full items-center rounded-md px-3 transition-[width] duration-500"
+                          style={{ width: `${Math.max(8, f.pctTopo)}%`, background: 'linear-gradient(90deg, hsl(var(--teal)), #22D3EE)', boxShadow: '0 0 12px hsl(var(--teal)/0.35)' }}
+                        >
+                          <span className="font-mono text-[12px] font-bold tabular-nums text-primary-foreground">{f.qtd}</span>
+                        </span>
+                      </span>
+                      <span className="w-[76px] shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">{brl(f.valor)}</span>
+                      <span className="w-10 shrink-0 text-right text-[11px] font-bold tabular-nums text-muted-foreground">{f.pctTopo}%</span>
+                    </button>
+                  </div>
+                ))}
+                {d.funilTotal === 0 && <p className="py-4 text-center text-[12.5px] text-muted-foreground/60">Sem leads em aberto.</p>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ---- tabela 1: vendas do período ---- */}
+      <div className={cn('overflow-hidden rounded-xl', GLASS)}>
+        <div className="flex items-center justify-between gap-2 border-b border-border/40 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <h2 className={TITULO}>Vendas {d.escopo}</h2>
+            <span className="grid h-5 min-w-5 place-items-center rounded-md bg-teal px-1.5 font-mono text-[11px] font-bold tabular-nums text-primary-foreground">{d.totalLinhas}</span>
+          </div>
+          <span className="font-mono text-[12px] font-bold tabular-nums text-teal">{brl(d.receita)}</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[620px] table-auto border-collapse text-left">
+            <thead>
+              <tr className={cn('border-b border-border/40 bg-muted/25', MICRO)}>
+                <d.Th k="cliente" label="Cliente" />
+                <d.Th k="operadora" label="Operadora" />
+                <d.Th k="data" label="Venda" />
+                <d.Th k="vidas" label="Vidas" right />
+                <d.Th k="valor" label="Valor/mês" right />
+                <d.Th k="comissao" label="Comissão" right />
+                <d.Th k="implantacao" label="Status" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/40">
+              {d.vendasPagina.map(({ lead, proc, valor, comissao: com, dataVenda }: any) => {
+                const dono = OWNERS.find((o) => o.id === (proc?.vendedorId ?? lead.ownerId))
+                return (
+                  <tr key={lead.id} className="transition-colors hover:bg-foreground/[0.02]">
+                    <td className="px-2.5 py-2">
+                      <span className="flex items-center gap-2">
+                        {d.daEquipe && dono && <img src={dono.avatar} alt="" title={dono.name} className="h-5 w-5 shrink-0 rounded-full object-cover" />}
+                        <button onClick={() => d.openDetail(lead.id)} title={lead.name} className="max-w-[170px] truncate text-[13px] font-semibold text-foreground transition-colors hover:text-teal">{lead.name}</button>
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-2.5 py-2 text-[12.5px] text-muted-foreground">{lead.operadora}</td>
+                    <td className="whitespace-nowrap px-2.5 py-2 text-[12.5px] tabular-nums text-muted-foreground">{fmtDia(dataVenda)}</td>
+                    <td className="px-2.5 py-2 text-right text-[12.5px] tabular-nums text-muted-foreground">{lead.vidas}</td>
+                    <td className="whitespace-nowrap px-2.5 py-2 text-right font-mono text-[12.5px] font-semibold tabular-nums text-foreground">{brl(valor)}</td>
+                    <td className="whitespace-nowrap px-2.5 py-2 text-right font-mono text-[12.5px] font-bold tabular-nums text-success">{brl(com)}</td>
+                    <td className="whitespace-nowrap px-2.5 py-2">{proc ? <StatusImpl stage={proc.stage} /> : <span className="text-[12.5px] text-muted-foreground/50">—</span>}</td>
+                  </tr>
+                )
+              })}
+              {d.totalLinhas === 0 && (
+                <tr><td colSpan={7} className="px-2.5 py-10 text-center text-[13px] text-muted-foreground/60">Nenhuma venda registrada neste período.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        {d.totalPaginas > 1 && (
+          <div className="flex items-center justify-between gap-3 border-t border-border/40 px-4 py-2.5">
+            <span className="text-[12px] tabular-nums text-muted-foreground">
+              {d.paginaAtual * POR_PAGINA + 1}–{Math.min((d.paginaAtual + 1) * POR_PAGINA, d.totalLinhas)} de {d.totalLinhas}
+            </span>
+            <div className="flex items-center gap-1">
+              <button onClick={() => d.setPagina((p: number) => Math.max(0, p - 1))} disabled={d.paginaAtual === 0} aria-label="Página anterior" className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"><CaretLeft className="h-3.5 w-3.5" weight="bold" /></button>
+              <span className="px-1 text-[12px] font-semibold tabular-nums text-foreground">{d.paginaAtual + 1}/{d.totalPaginas}</span>
+              <button onClick={() => d.setPagina((p: number) => Math.min(d.totalPaginas - 1, p + 1))} disabled={d.paginaAtual >= d.totalPaginas - 1} aria-label="Próxima página" className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40"><CaretRight className="h-3.5 w-3.5" weight="bold" /></button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ---- tabelas 2 e 3: esteira e pagas ---- */}
+      <TabelaContratosB titulo="Em implantação" subtitulo="snapshot, fora do período" linhas={d.esteiraLista} totalTom="text-warning" comissaoPorLead={d.comissaoPorLead} vazio="Nenhuma proposta na esteira." openDetail={d.openDetail} />
+      <TabelaContratosB titulo="Pagas" subtitulo="confirmadas no período" linhas={d.pagasLista} totalTom="text-success" comissaoPorLead={d.comissaoPorLead} vazio="Nenhuma proposta paga no período." openDetail={d.openDetail} />
+
+      {/* ---- ranking em linhas full-width (substitui os chips) ---- */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className={TITULO}>Ranking {d.escopo}</h2>
+          <button
+            onClick={() => d.setOwnerId('equipe')}
+            className={cn('rounded-lg border px-2.5 py-1 text-[12px] font-semibold transition-colors',
+              d.daEquipe ? 'border-teal bg-teal/[0.08] text-foreground' : 'border-border/50 text-muted-foreground hover:bg-foreground/[0.03]')}
+          >Equipe</button>
+        </div>
+        {!d.daEquipe && d.minhaPos > 0 && (
+          <div className="rounded-xl border border-teal/25 bg-teal/[0.08] px-4 py-2.5 text-center text-[12px] font-semibold text-foreground">
+            {d.minhaPos === 1 ? 'Você está em 1º lugar na equipe.' : <>Você está em {d.minhaPos}º — faltam <span className="font-mono tabular-nums text-teal">{brl(d.gapAcima)}</span> para o {d.minhaPos - 1}º.</>}
+          </div>
+        )}
+        {d.rankingB.map((r: any, i: number) => (
+          <div key={r.owner.id} className={cn('overflow-hidden rounded-xl border bg-card/60 transition-colors',
+            d.ownerId === r.owner.id ? 'border-teal/40 bg-teal/[0.06] ring-1 ring-inset ring-teal/25' : 'border-border/40 hover:border-teal/30')}>
+            <button onClick={() => d.setOwnerId(r.owner.id)} className="grid w-full grid-cols-1 text-left sm:grid-cols-[240px_minmax(0,1fr)]">
+              <span className="flex items-center gap-3 p-3 sm:px-4">
+                <span className={cn('grid h-5 w-5 shrink-0 place-items-center rounded font-mono text-[11px] font-bold tabular-nums',
+                  i === 0 && r.receita > 0 ? 'bg-teal text-primary-foreground' : 'bg-foreground/[0.06] text-muted-foreground')}>{i + 1}</span>
+                <img src={r.owner.avatar} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                <span className="min-w-0">
+                  <span className="block truncate text-[13.5px] font-semibold text-foreground">{r.owner.name}</span>
+                  <span className="block text-[11px] text-muted-foreground">{i + 1}º lugar · {brl(r.receita)}</span>
+                </span>
+              </span>
+              <span className="flex items-center justify-end gap-6 px-4 pb-3 sm:pb-0">
+                {[
+                  { v: String(r.vendas), l: 'Vendas', t: 'text-foreground' },
+                  { v: brl(r.receita), l: 'Receita', t: 'text-teal' },
+                  { v: `${r.conversao}%`, l: 'Conversão', t: 'text-foreground' },
+                  { v: brl(r.comissao), l: 'Comissão', t: 'text-success' },
+                ].map((m) => (
+                  <span key={m.l} className="text-center">
+                    <span className={cn('block font-mono text-[15px] font-bold tabular-nums', m.t)}>{m.v}</span>
+                    <span className="block text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground">{m.l}</span>
+                  </span>
+                ))}
+              </span>
+            </button>
+            <span className="block h-1 w-full bg-foreground/[0.06]">
+              <span className={cn('block h-full', i === 0 && r.receita > 0 ? 'bg-teal' : 'bg-teal/45')} style={{ width: `${(r.receita / d.topReceita) * 100}%` }} />
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* ---- motivos de perda ---- */}
+      {d.motivos.length > 0 && (
+        <div className={cn('rounded-xl p-4', GLASS)}>
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h2 className={TITULO}>Motivos de perda</h2>
+            <span className="text-[11px] tabular-nums text-muted-foreground">{d.perdidos} perdidos no período</span>
+          </div>
+          <div className="grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
+            {d.motivos.map((m: any) => (
+              <div key={m.motivo}>
+                <div className="mb-1 flex items-baseline gap-2">
+                  <span className="min-w-0 flex-1 truncate text-[12.5px] text-muted-foreground" title={m.motivo}>{m.motivo}</span>
+                  <span className="text-[13px] font-bold tabular-nums text-foreground">{m.qtd}</span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-foreground/[0.06]">
+                  <div className="h-full rounded-full bg-danger/70" style={{ width: `${(m.qtd / d.motivos[0].qtd) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 type SortKey = 'cliente' | 'operadora' | 'vidas' | 'valor' | 'comissao' | 'implantacao' | 'data'
 
 export default function Performance() {
@@ -253,6 +601,8 @@ export default function Performance() {
   const [offset, setOffset] = useState(0)
   const [custom, setCustom] = useState<{ from: string; to: string }>({ from: '', to: '' })
   const [sort, setSort] = useState<{ key: SortKey; dir: 'asc' | 'desc' }>({ key: 'data', dir: 'desc' })
+  const [variante, setVariante] = useState<'A' | 'B'>(() => (localStorage.getItem('perf-variante') === 'B' ? 'B' : 'A'))
+  const trocaVariante = (v: 'A' | 'B') => { localStorage.setItem('perf-variante', v); setVariante(v) }
   const [pagina, setPagina] = useState(0)
   const [alertaModal, setAlertaModal] = useState<{ titulo: string; itens: AlertaLead[] } | null>(null)
   const { inicio, fim, navegavel } = useMemo(() => rangeDe(tipo, offset, custom), [tipo, offset, custom])
@@ -399,6 +749,30 @@ export default function Performance() {
   }).sort((a, b) => (b.receita - a.receita) || (b.vendas - a.vendas) || a.owner.name.localeCompare(b.owner.name, 'pt-BR')),
     [leads, processes, tipo, offset, custom]) // eslint-disable-line react-hooks/exhaustive-deps
   const topReceita = Math.max(1, ...ranking.map((r) => r.receita))
+
+  /* ---------- derivacoes exclusivas da variante B ---------- */
+  const vendedorAtual = OWNERS.find((o) => o.id === ownerId) ?? null
+  /** comissao marginal ja calculada por contrato do periodo, indexada por leadId */
+  const comissaoPorLead = useMemo(() => new Map(vendas.map((v) => [v.lead.id, v.comissao])), [vendas])
+
+  /** contratos parados na esteira (snapshot, fora do periodo) */
+  const esteiraLista = useMemo(() => processes
+    .filter((p) => (daEquipe || p.vendedorId === ownerId) && IMPL_ATIVAS.includes(p.stage))
+    .sort((a, b) => (a.dataVenda < b.dataVenda ? 1 : -1)),
+    [processes, ownerId, daEquipe])
+
+  /** contratos confirmados (pago/implantado) com data de venda dentro do periodo */
+  const pagasLista = useMemo(() => processes
+    .filter((p) => (daEquipe || p.vendedorId === ownerId) && IMPL_PAGAS.includes(p.stage) && noCiclo(new Date(p.dataVenda + 'T00:00:00')))
+    .sort((a, b) => (a.dataVenda < b.dataVenda ? 1 : -1)),
+    [processes, ownerId, daEquipe, tipo, offset, custom]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** ranking enriquecido: acrescenta conversao e comissao por vendedor */
+  const rankingB = useMemo(() => ranking.map((r) => {
+    const perd = leads.filter((l) => STAGE_CATALOG[l.stage]?.kind === 'lost' && l.ownerId === r.owner.id && noCiclo(dataVendaDe(l, procDe(l)))).length
+    const fech = r.vendas + perd
+    return { ...r, perdidos: perd, conversao: fech ? Math.round((r.vendas / fech) * 100) : 0, comissao: comissaoDe(r.receita) }
+  }), [ranking, leads, processes, tipo, offset, custom]) // eslint-disable-line react-hooks/exhaustive-deps
   const rankingVazio = ranking.every((r) => r.receita === 0)
   const minhaPos = daEquipe ? 0 : ranking.findIndex((r) => r.owner.id === ownerId) + 1
   const gapAcima = minhaPos > 1 ? ranking[minhaPos - 2].receita - ranking[minhaPos - 1].receita : 0
@@ -459,6 +833,20 @@ export default function Performance() {
     </th>
   )
 
+  /* ---------- pacote de dados da variante B (mesmos numeros da A) ---------- */
+  const dadosB = {
+    daEquipe, ownerId, setOwnerId, vendedorAtual, escopo,
+    receita, receitaConfirmada, emAberto, vidas, ticket, porVida, comissao, comissaoConfirmada,
+    faixa, pctMeta, posDe, delta, qtdVendas: vendas.length,
+    perdidos, taxaPerda, conversao, cicloMedio, motivos,
+    esteira, esteiraLista, pagasLista, comissaoPorLead,
+    retornos, parados, paradosPct, paradoCritico, paradosLeads,
+    funil, funilTotal, pipeline, qtdAbertos: abertos.length,
+    vendasPagina, totalLinhas: vendasOrdenadas.length, totalPaginas, paginaAtual, setPagina,
+    rankingB, topReceita, minhaPos, gapAcima,
+    openDetail, setAlertaModal, notaFunil, Th,
+  }
+
   return (
     <div className="relative mx-auto max-w-[1400px] px-6 py-6">
       {/* Camada ambiente local — dá o que o glass (backdrop-blur) dos cards vai frostar */}
@@ -480,6 +868,17 @@ export default function Performance() {
               {diasRestantes === 0 ? 'último dia do ciclo' : `faltam ${diasRestantes} dia${diasRestantes === 1 ? '' : 's'}`}
             </span>
           )}
+          <div className="flex items-center rounded-lg border border-border/50 bg-card p-0.5" role="group" aria-label="Variante de layout">
+            {(['A', 'B'] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => trocaVariante(v)}
+                title={v === 'A' ? 'Layout atual' : 'Layout no padrão chat-wave'}
+                className={cn('h-7 w-7 rounded-md text-[12px] font-bold transition-colors',
+                  variante === v ? 'bg-teal text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground')}
+              >{v}</button>
+            ))}
+          </div>
           <PeriodoSelect tipo={tipo} onTipo={trocaTipo} custom={custom} onCustom={setCustom} />
           <div className="flex items-center gap-1 rounded-lg border border-border/50 bg-card px-1 py-0.5">
             <button
@@ -499,7 +898,8 @@ export default function Performance() {
         </div>
       </div>
 
-      {/* seletor de vendedor */}
+      {/* seletor de vendedor (A) — em B o ranking assume esse papel */}
+      {variante === 'A' && (
       <div className="mb-5 flex flex-wrap items-center gap-1.5">
         <button onClick={() => setOwnerId('equipe')} className={cn('inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[13px] font-semibold transition-colors', daEquipe ? 'border-teal bg-teal/[0.08] text-foreground' : 'border-border/50 text-muted-foreground hover:bg-foreground/[0.03]')}>
           <Users className="h-4 w-4" weight="duotone" /> Equipe
@@ -510,7 +910,9 @@ export default function Performance() {
           </button>
         ))}
       </div>
+      )}
 
+      {variante === 'A' ? (<>
       {/* KPIs do ciclo */}
       <div className="mb-3 grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Kpi
@@ -534,7 +936,7 @@ export default function Performance() {
       {/* métricas secundárias */}
       <div className={cn('mb-5 grid grid-cols-2 divide-x divide-y divide-border/40 overflow-hidden rounded-xl sm:grid-cols-3 sm:divide-y-0 lg:grid-cols-6', GLASS)}>
         <Mini label="Em implantação" valor={brl(esteira.valor)} hint={`${esteira.qtd} proposta${esteira.qtd === 1 ? '' : 's'} na esteira`} />
-        <Mini label="No pipe" valor={brl(pipeline)} hint={cobertura !== null ? `cobre ${cobertura.toFixed(1)}× o que falta` : `${abertos.length} lead${abertos.length === 1 ? '' : 's'} em aberto`} />
+        <Mini label="Oportunidades" valor={brl(pipeline)} hint={cobertura !== null ? `cobre ${cobertura.toFixed(1)}× o que falta` : `${abertos.length} lead${abertos.length === 1 ? '' : 's'} em aberto`} />
         <Mini label="Novos leads" valor={String(novos.length)} hint={novos.length ? `${convCoorte}% viraram venda` : 'nenhum no período'} />
         <Mini label="Ciclo de venda" valor={cicloMedio !== null ? `${cicloMedio}d` : '—'} hint="da entrada ao ganho" />
         <Mini label="Perdidos" valor={String(perdidos)} hint={fechados ? `${taxaPerda}% dos fechados` : 'nada fechado'} tone={perdidos > 0 ? 'text-danger' : undefined} />
@@ -797,6 +1199,7 @@ export default function Performance() {
           )}
         </div>
       </div>
+      </>) : <VarianteB d={dadosB} />}
 
       {alertaModal && (
         <AlertaModal

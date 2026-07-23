@@ -96,8 +96,9 @@ function useCreatable(base: Opt[]) {
   return { options, remember }
 }
 
-function Section({ icon: Icon, title, accent, children, collapsible }: { icon: Icon; title: string; accent?: boolean; children: ReactNode; collapsible?: boolean }) {
-  const [open, setOpen] = useState(true)
+function Section({ icon: Icon, title, accent, children, collapsible, defaultOpen }: { icon: Icon; title: string; accent?: boolean; children: ReactNode; collapsible?: boolean; defaultOpen?: boolean }) {
+  // seções colapsáveis abrem recolhidas: o painel entra como um índice, o usuário expande o que precisa
+  const [open, setOpen] = useState(!collapsible || !!defaultOpen)
   return (
     <section className="border-t border-border/40 pt-4 first:border-t-0 first:pt-0">
       {collapsible ? (
@@ -483,7 +484,21 @@ export default function LeadDetail() {
               </div>
             </Section>
 
-            <Section icon={Users} title={`Vidas & beneficiários${cur.lives?.length ? ` · ${cur.lives.length}` : ''}`} collapsible>
+            <Section icon={Users} title={`Vidas & beneficiários${cur.vidas ? ` · ${cur.lives?.length ?? 0}/${cur.vidas}` : cur.lives?.length ? ` · ${cur.lives.length}` : ''}`} collapsible>
+              <div className="mb-3">
+                <EditField
+                  label="Vidas contratadas"
+                  type="number"
+                  value={cur.vidas ? String(cur.vidas) : ''}
+                  display={cur.vidas ? `${cur.vidas} vida${cur.vidas === 1 ? '' : 's'}` : '—'}
+                  onCommit={(v) => edit({ vidas: Number(v.replace(/\D/g, '')) || 0 })}
+                />
+                {!!cur.vidas && (cur.lives?.length ?? 0) < cur.vidas && (
+                  <p className="mt-1 text-[11.5px] text-warning">
+                    Faltam {cur.vidas - (cur.lives?.length ?? 0)} beneficiário{cur.vidas - (cur.lives?.length ?? 0) === 1 ? '' : 's'} para completar o cadastro.
+                  </p>
+                )}
+              </div>
               <LivesEditor lives={cur.lives ?? []} onChange={(l) => edit({ lives: l })} />
             </Section>
 
